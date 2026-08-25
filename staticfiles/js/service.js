@@ -68,7 +68,11 @@
     card.className = "match-card";
 
     const img = document.createElement("img");
-    img.src = counsellor.photo;
+    img.src = counsellor.photo_thumb || counsellor.photo;
+    img.width = 84;
+    img.height = 84;
+    img.loading = "lazy";
+    img.decoding = "async";
     img.alt = "";
     img.setAttribute("aria-hidden", "true");
     card.appendChild(img);

@@ -40,7 +40,7 @@
   align-items: center;
   gap: 0.9rem;
   text-align: left;
-  background: #ecefe0;
+  background: var(--surface);
   border: 1.5px solid color-mix(in srgb, var(--slate) 14%, transparent);
   border-radius: var(--radius);
   padding: 0.9rem 1.1rem;
@@ -177,7 +177,7 @@
   padding: 0.55rem 1.1rem;
   border-radius: 999px;
   border: 1.5px solid color-mix(in srgb, var(--slate) 22%, transparent);
-  background: #ecefe0;
+  background: var(--surface);
   color: var(--slate);
   cursor: pointer;
   transition:
@@ -225,14 +225,14 @@
 }
 
 .mode-chip.is-active {
-  background: var(--teal);
-  border-color: var(--teal);
-  color: var(--slate-deep);
+  background: color-mix(in srgb, var(--teal) 75%, var(--ink));
+  border-color: color-mix(in srgb, var(--teal) 75%, var(--ink));
+  color: var(--sage);
 }
 
 /* ---------- Summary + contact fields ---------- */
 .booking-summary {
-  background: #ecefe0;
+  background: var(--surface);
   border-radius: var(--radius-lg);
   padding: 1.6rem 1.8rem;
   display: flex;

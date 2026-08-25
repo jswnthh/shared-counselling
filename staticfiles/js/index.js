@@ -28,8 +28,8 @@ if (facesViewport && facesTrack) {
   const photos = Array.from(facesTrack.querySelectorAll(".face-photo"));
 
   if (!prefersReduced) {
-    const MIN_SCALE = 0.62;
-    const MAX_SCALE = 1.32;
+    const MIN_SCALE = 0.86;
+    const MAX_SCALE = 1.08;
 
     const updateFaceScale = () => {
       const viewportRect = facesViewport.getBoundingClientRect();

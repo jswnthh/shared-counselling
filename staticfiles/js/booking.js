@@ -15,6 +15,9 @@
 
   const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const windowDays = parseInt(form.dataset.windowDays, 10) || 21;
+  const serverHorizon = form.dataset.bookingHorizon
+    ? new Date(form.dataset.bookingHorizon)
+    : null;
 
   const counsellorSlugInput = document.getElementById("counsellorSlugInput");
   const dateInput = document.getElementById("dateInput");
@@ -67,7 +70,7 @@
   };
 
   const today = startOfDay(new Date());
-  const horizon = addDays(today, windowDays);
+  const horizon = serverHorizon ? startOfDay(serverHorizon) : addDays(today, windowDays);
   const minMonth = firstOfMonth(today);
   const maxMonth = firstOfMonth(horizon);
 
@@ -194,7 +197,10 @@
     updateSummary();
 
     fetch(`/book/availability/?counsellor=${encodeURIComponent(counsellor.slug)}&date=${iso}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`availability ${res.status}`);
+        return res.json();
+      })
       .then((data) => renderSlots(data.slots || []))
       .catch(() => {
         slotEmpty.hidden = false;

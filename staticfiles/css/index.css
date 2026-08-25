@@ -2,10 +2,11 @@
   --slate: #455957;
   --slate-deep: #35443f;
   --sage: #e2e4d2;
-  --teal: #7ba7af;
+  --surface: #eeeee4;
+  --teal: #568e96;
   --teal-soft: #c3d3d0;
-  --ink: #26312e;
-  --ink-soft: #5b6a67;
+  --ink: #1c2422;
+  --ink-soft: #3d4a47;
   --radius-lg: 28px;
   --radius: 16px;
   --font-display: "Space Grotesk", -apple-system, sans-serif;
@@ -17,6 +18,9 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 html {
@@ -240,12 +244,13 @@ a {
   background: radial-gradient(
     circle at 38% 32%,
     #cfe0e2,
-    var(--teal) 62%,
-    #6d99a1
+    var(--teal) 50%,
+    #779aa1
   );
   filter: blur(2px);
   animation: orb-breathe 12s cubic-bezier(0.45, 0, 0.4, 1) infinite;
 }
+
 
 /* A real breath cycle, not a generic pulse — 4s inhale, 2s hold, 4s exhale,
    2s hold (the "box breathing" pattern taught for anxiety), so the two flat
@@ -281,7 +286,7 @@ a {
   position: relative;
   overflow: hidden;
   width: min(760px, 88vw);
-  height: clamp(120px, 15vw, 168px);
+  height: clamp(132px, 16vw, 184px);
   margin: 1.8rem auto 0.4rem;
   -webkit-mask-image: linear-gradient(
     to right,
@@ -388,7 +393,7 @@ a {
 
 .ticker span::after {
   content: "✦";
-  color: var(--teal);
+  color: var(--teal-soft);
   font-size: 0.8rem;
 }
 
@@ -523,7 +528,7 @@ section {
 
 .approach-row .num {
   font-family: var(--font-display);
-  color: var(--teal);
+  color: var(--teal-soft);
   font-size: 1rem;
 }
 
@@ -712,7 +717,7 @@ section {
   font-weight: 500;
   font-size: clamp(2.4rem, 6vw, 4.6rem);
   letter-spacing: -0.03em;
-  color: var(--slate-deep);
+  color: var(--sage);
 }
 
 .cta-marquee .line .track {
@@ -807,7 +812,7 @@ section {
   margin-top: 3rem;
   padding-top: 1.4rem;
   border-top: 1px solid rgba(195, 211, 208, 0.18);
-  color: rgba(195, 211, 208, 0.6);
+  color: color-mix(in srgb, var(--teal-soft) 80%, var(--slate-deep));
   font-size: 0.85rem;
 }
 

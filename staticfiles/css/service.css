@@ -46,7 +46,7 @@
   padding: 0.65rem 1.3rem;
   border-radius: 999px;
   border: 1.5px solid color-mix(in srgb, var(--slate) 22%, transparent);
-  background: #ecefe0;
+  background: var(--surface);
   color: var(--slate);
   cursor: pointer;
   transition:
@@ -100,9 +100,9 @@
 }
 
 .mode-chip.is-active {
-  background: var(--teal);
-  border-color: var(--teal);
-  color: var(--slate-deep);
+  background: color-mix(in srgb, var(--teal) 75%, var(--ink));
+  border-color: color-mix(in srgb, var(--teal) 75%, var(--ink));
+  color: var(--sage);
 }
 
 /* ---------- Matches ---------- */
@@ -118,7 +118,7 @@
 }
 
 .match-card {
-  background: #ecefe0;
+  background: var(--surface);
   border: 1px solid color-mix(in srgb, var(--slate) 12%, transparent);
   border-radius: var(--radius-lg);
   padding: 1.9rem 1.7rem;
