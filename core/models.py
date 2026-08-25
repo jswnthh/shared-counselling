@@ -46,7 +46,10 @@ class Counsellor(models.Model):
         max_length=200,
         default="images/face_1.avif",
         blank=True,
-        help_text="Static path, e.g. images/counsellors/cards/thara.webp",
+        help_text=(
+            "Static path, e.g. images/counsellors/cards/thara.webp. "
+            "Usually set automatically when you use Upload portrait in admin."
+        ),
     )
     location = models.CharField(max_length=120)
     # Whether this counsellor is currently practising/accepting new clients —

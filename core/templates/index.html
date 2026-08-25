@@ -17,20 +17,12 @@
             aria-label="Portraits of the counsellors in our practice, drifting past one another"
           >
             <div class="faces-track" id="facesTrack">
-              <img class="face-photo" src="{% static 'images/face_1.avif' %}" width="160" height="160" decoding="async" fetchpriority="high" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_2.avif' %}" width="160" height="160" decoding="async" fetchpriority="high" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_3.avif' %}" width="160" height="160" decoding="async" fetchpriority="high" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_4.avif' %}" width="160" height="160" decoding="async" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_5.avif' %}" width="160" height="160" decoding="async" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_6.avif' %}" width="160" height="160" decoding="async" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_7.avif' %}" width="160" height="160" decoding="async" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_1.avif' %}" width="160" height="160" decoding="async" loading="lazy" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_2.avif' %}" width="160" height="160" decoding="async" loading="lazy" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_3.avif' %}" width="160" height="160" decoding="async" loading="lazy" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_4.avif' %}" width="160" height="160" decoding="async" loading="lazy" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_5.avif' %}" width="160" height="160" decoding="async" loading="lazy" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_6.avif' %}" width="160" height="160" decoding="async" loading="lazy" alt="" aria-hidden="true" />
-              <img class="face-photo" src="{% static 'images/face_7.avif' %}" width="160" height="160" decoding="async" loading="lazy" alt="" aria-hidden="true" />
+              {% for c in counsellor_previews %}
+              <img class="face-photo" src="{{ c.photo }}" width="160" height="160" decoding="async"{% if forloop.first %} fetchpriority="high"{% endif %} alt="" aria-hidden="true" />
+              {% endfor %}
+              {% for c in counsellor_previews %}
+              <img class="face-photo" src="{{ c.photo }}" width="160" height="160" decoding="async" loading="lazy" alt="" aria-hidden="true" />
+              {% endfor %}
             </div>
           </div>
 

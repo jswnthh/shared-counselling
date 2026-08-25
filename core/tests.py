@@ -1,14 +1,25 @@
 from datetime import timedelta
+from io import BytesIO
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 
 from .data import get_counsellor_by_slug, get_counsellors
+from .images import card_relpath, thumb_relpath, write_static_portrait
 from .models import Booking, Counsellor
 from .scheduling import MIN_LEAD_TIME, get_available_slots
+
+
+def _jpeg_upload(size=(1200, 900)):
+    buf = BytesIO()
+    Image.new("RGB", size, (80, 120, 90)).save(buf, format="JPEG")
+    return SimpleUploadedFile("portrait.jpg", buf.getvalue(), content_type="image/jpeg")
 
 
 def next_working_date(counsellor, after_hours=None):
@@ -195,6 +206,14 @@ class CounsellorPhotoTests(TestCase):
         self.assertTrue(data["photo"].endswith("face_1.avif"))
         self.assertEqual(data["photo"], data["photo_thumb"])
 
+    def test_slug_webp_wins_over_face_placeholder(self):
+        row = Counsellor.objects.get(slug="divya-shri")
+        row.photo_placeholder = "images/face_2.avif"
+        row.save()
+        data = get_counsellor_by_slug(row.slug)
+        self.assertIn("/cards/divya-shri.webp", data["photo"])
+        self.assertIn("/thumbs/divya-shri.webp", data["photo_thumb"])
+
     def test_card_path_pairs_a_thumb(self):
         row = Counsellor.objects.create(
             slug="photo-test",
@@ -208,6 +227,26 @@ class CounsellorPhotoTests(TestCase):
         data = get_counsellor_by_slug(row.slug)
         self.assertIn("/cards/thara.webp", data["photo"])
         self.assertIn("/thumbs/thara.webp", data["photo_thumb"])
+
+    def test_write_static_portrait_creates_webp_pair(self):
+        import shutil
+        import tempfile
+
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        with override_settings(STATICFILES_DIRS=[tmp], STATIC_ROOT=tmp / "collected"):
+            rel = write_static_portrait("new-counsellor", _jpeg_upload())
+            self.assertEqual(rel, card_relpath("new-counsellor"))
+            card = tmp / card_relpath("new-counsellor")
+            thumb = tmp / thumb_relpath("new-counsellor")
+            collected_card = tmp / "collected" / card_relpath("new-counsellor")
+            self.assertTrue(card.is_file())
+            self.assertTrue(thumb.is_file())
+            self.assertTrue(collected_card.is_file())
+            self.assertGreater(card.stat().st_size, 0)
+            with Image.open(card) as img:
+                self.assertEqual(img.format, "WEBP")
+                self.assertLessEqual(max(img.size), 600)
 
 
 class SitemapTests(TestCase):

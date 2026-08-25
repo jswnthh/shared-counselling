@@ -11,6 +11,8 @@ time) so admin edits show up immediately, without a server restart.
 """
 
 from django.conf import settings
+from django.contrib.staticfiles import finders
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.templatetags.static import static
 
 from .models import Counsellor, ServiceCategory, Topic
@@ -65,9 +67,29 @@ def _thumb_static_path(card_path):
     return path
 
 
+def _has_static(rel):
+    """True if collectstatic output or STATICFILES_DIRS contains this file."""
+    rel = _placeholder_path(rel)
+    try:
+        if staticfiles_storage.exists(rel):
+            return True
+    except (ValueError, OSError):
+        pass
+    return finders.find(rel) is not None
+
+
 def _resolve_photos(counsellor):
-    """Return (detail_url, thumb_url) from static files."""
-    rel = counsellor.photo_placeholder or "images/face_1.avif"
+    """Prefer static/images/counsellors/{cards,thumbs}/<slug>.webp.
+
+    Production rows still had images/face_N.avif after the ImageField was
+    dropped, which made every profile show the illustrations. The files on
+    disk are the source of truth; photo_placeholder is the fallback.
+    """
+    slug_card = f"images/counsellors/cards/{counsellor.slug}.webp"
+    if _has_static(slug_card):
+        rel = slug_card
+    else:
+        rel = counsellor.photo_placeholder or "images/face_1.avif"
     return _static_url(rel), _static_url(_thumb_static_path(rel))
 
 

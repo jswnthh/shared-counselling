@@ -32,7 +32,7 @@ def _resolved_counsellor(counsellor, topic_labels):
 def index(request):
     context = {
         "counsellor_previews": [
-            {"photo": c["photo_thumb"], "name": c["name"], "is_active": c["is_active"]}
+            {"photo": c["photo"], "name": c["name"], "is_active": c["is_active"]}
             for c in get_counsellors()
         ],
     }
