@@ -1,6 +1,7 @@
 /* ---------- Booking form shell ---------- */
 .booking-section {
-  padding-bottom: 5rem;
+  padding-top: 2rem !important;
+  padding-bottom: 7rem;
 }
 
 .booking-form {

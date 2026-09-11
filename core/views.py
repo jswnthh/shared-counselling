@@ -69,14 +69,31 @@ def counsellors(request):
 @require_http_methods(["GET", "POST"])
 def book(request):
     preselected_slug = request.GET.get("counsellor", "")
-    if preselected_slug and get_counsellor_by_slug(preselected_slug, bookable_only=True) is None:
-        preselected_slug = ""
+
+    if preselected_slug:
+        selected_counsellor = get_counsellor_by_slug(
+            preselected_slug,
+            bookable_only=True,
+        )
+
+        if selected_counsellor is None:
+            preselected_slug = ""
+            counsellor_list = get_counsellors(bookable_only=True)
+        else:
+            counsellor_list = [selected_counsellor]
+
+    else:
+        counsellor_list = get_counsellors(bookable_only=True)
 
     if request.method == "POST":
         form = BookingForm(request.POST)
+
         if form.is_valid():
             start_at = form.cleaned_data["start_at"]
-            end_at = start_at + timedelta(minutes=SESSION_LENGTH_MINUTES)
+            end_at = start_at + timedelta(
+                minutes=SESSION_LENGTH_MINUTES
+            )
+
             try:
                 with transaction.atomic():
                     booking = Booking.objects.create(
@@ -87,16 +104,32 @@ def book(request):
                         start_at=start_at,
                         end_at=end_at,
                     )
+
             except IntegrityError:
-                form.add_error(None, "Sorry — that slot was just booked by someone else. Please pick another time.")
+                form.add_error(
+                    None,
+                    "Sorry — that slot was just booked by someone else. "
+                    "Please pick another time.",
+                )
+
             else:
-                create_calendar_event(booking)  # stubbed — see calendar_sync.py
-                return redirect("book_confirmed", booking_id=booking.pk)
+                create_calendar_event(booking)
+
+                return redirect(
+                    "book_confirmed",
+                    booking_id=booking.pk,
+                )
+
     else:
-        form = BookingForm(initial={"counsellor_slug": preselected_slug} if preselected_slug else None)
+        form = BookingForm(
+            initial={"counsellor_slug": preselected_slug}
+            if preselected_slug
+            else None
+        )
 
     context = {
         "form": form,
+
         "counsellors_json": [
             {
                 "slug": c["slug"],
@@ -106,15 +139,20 @@ def book(request):
                 "modes": c["modes"],
                 "working_hours": c["working_hours"],
             }
-            for c in get_counsellors(bookable_only=True)
+            for c in counsellor_list
         ],
+
         "preselected_slug": preselected_slug,
         "booking_window_days": BOOKING_WINDOW_DAYS,
-        "booking_horizon": (timezone.now() + timedelta(days=BOOKING_WINDOW_DAYS)).isoformat(),
+        "booking_horizon": (
+            timezone.now()
+            + timedelta(days=BOOKING_WINDOW_DAYS)
+        ).isoformat(),
+
         "session_fee_display": SESSION_FEE_DISPLAY,
     }
-    return render(request, "booking.html", context)
 
+    return render(request, "booking.html", context)
 
 @require_GET
 def booking_availability(request):
