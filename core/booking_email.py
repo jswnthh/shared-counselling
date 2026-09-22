@@ -34,6 +34,20 @@ def _practice_inboxes():
 
 
 def _send_message(message, *, booking_id, kind):
+    if not settings.EMAIL_HOST:
+        logger.error(
+            "Cannot send booking %s email for booking %s: EMAIL_HOST is not set",
+            kind,
+            booking_id,
+        )
+        return
+    if not settings.EMAIL_HOST_PASSWORD:
+        logger.error(
+            "Cannot send booking %s email for booking %s: EMAIL_HOST_PASSWORD is not set",
+            kind,
+            booking_id,
+        )
+        return
     try:
         message.send(fail_silently=False)
     except Exception:

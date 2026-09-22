@@ -20,6 +20,23 @@ from django.core.exceptions import ImproperlyConfigured
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def _load_env_file(path):
+    """Load KEY=VALUE lines into os.environ without overwriting existing vars."""
+    if not path.is_file():
+        return
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip("'").strip('"')
+        os.environ.setdefault(key, value)
+
+
+_load_env_file(BASE_DIR / ".env")
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -250,16 +267,24 @@ if _aws_bucket:
 
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
-EMAIL_HOST = os.environ.get("EMAIL_HOST")
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "true").lower() == "true"
+EMAIL_HOST = os.environ.get("EMAIL_HOST") or "smtp.gmail.com"
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT") or 587)
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "sharedcounsellingteam@gmail.com"
+# Gmail app passwords are often copied with spaces; SMTP auth rejects those.
+EMAIL_HOST_PASSWORD = (os.environ.get("EMAIL_HOST_PASSWORD") or "").replace(" ", "")
+_email_use_tls = os.environ.get("EMAIL_USE_TLS", "true").lower() in ("true", "1", "yes")
+_email_use_ssl = os.environ.get("EMAIL_USE_SSL", "false").lower() in ("true", "1", "yes")
+# Port 465 is implicit SSL; 587 is STARTTLS. They cannot both be on.
+if EMAIL_PORT == 465:
+    EMAIL_USE_SSL = True
+    EMAIL_USE_TLS = False
+else:
+    EMAIL_USE_SSL = _email_use_ssl
+    EMAIL_USE_TLS = False if EMAIL_USE_SSL else _email_use_tls
 
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
-    "Shared Counselling <sharedcounsellingteam@gmail.com>",
+    f"Shared Counselling <{EMAIL_HOST_USER}>",
 )
 
 # Comma-separated practice inboxes that receive (and are CC'd on) bookings.
