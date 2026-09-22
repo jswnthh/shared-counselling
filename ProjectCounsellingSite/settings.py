@@ -197,6 +197,10 @@ _static_backend = (
     else "django.contrib.staticfiles.storage.StaticFilesStorage"
 )
 
+# If collectstatic didn't run (or STATIC_ROOT is empty), still serve from
+# STATICFILES_DIRS / app static — the source `static/` tree is always in git.
+WHITENOISE_USE_FINDERS = True
+
 # Optional leftover local-disk uploads. Counsellor portraits now live under
 # static/images/counsellors/ and are served as static files. When
 # AWS_STORAGE_BUCKET_NAME is set, any remaining FileField uploads go to S3/R2.

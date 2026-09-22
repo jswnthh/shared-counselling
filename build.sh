@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # Render / CI build: install, collect static from static/, migrate.
+#
+# Also set this exact command in the Render dashboard Build Command
+# (blueprint updates do not always override an existing service):
+#   bash build.sh
 set -euo pipefail
 
 pip install -r requirements.txt
@@ -21,5 +25,7 @@ for path in "${required[@]}"; do
     exit 1
   fi
 done
+
+echo "collectstatic ok: $(find staticfiles -type f | wc -l) files"
 
 python manage.py migrate --noinput
