@@ -95,13 +95,13 @@ class BookingViewTests(TestCase):
         response = self.client.post(reverse("book"), self._post_data())
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(mail.outbox), 2)
-        recipients = {tuple(m.to) for m in mail.outbox}
-        self.assertIn(("sharedcounselling@gmail.com",), recipients)
-        self.assertIn(("client@example.com",), recipients)
-        practice = next(m for m in mail.outbox if m.to == ["sharedcounselling@gmail.com"])
         client = next(m for m in mail.outbox if m.to == ["client@example.com"])
-        self.assertIn("New booking", practice.subject)
+        practice = next(m for m in mail.outbox if m.to != ["client@example.com"])
         self.assertIn("Booking confirmed", client.subject)
+        self.assertIn("sharedcounsellingteam@gmail.com", client.cc)
+        self.assertIn("sharedcounselling@gmail.com", client.cc)
+        self.assertIn("New booking", practice.subject)
+        self.assertIn("sharedcounsellingteam@gmail.com", practice.to)
 
     def test_duplicate_post_for_same_slot_is_rejected(self):
         first = self.client.post(reverse("book"), self._post_data())

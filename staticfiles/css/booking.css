@@ -365,6 +365,18 @@ body:has(.booking-shell) .site-footer {
   color: var(--ink-soft);
 }
 
+.booking-summary-static {
+  max-width: 36rem;
+  padding: 1.15rem 1.25rem;
+  gap: 0.55rem;
+  background: var(--surface);
+  font-size: inherit;
+}
+
+.booking-summary-static .summary-row {
+  font-size: 0.95rem;
+}
+
 .contact-fields {
   display: grid;
   grid-template-columns: 1fr;
