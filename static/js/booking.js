@@ -1,7 +1,6 @@
-// Booking flow: pick a counsellor, then a real date/time from their
-// availability (server-authoritative — this only renders what
-// /book/availability/ returns), then confirm. A normal form POST, not a
-// fetch-driven submit.
+// Booking flow for a pre-selected counsellor: mode → date → time → confirm.
+// Availability comes from /book/availability/ (server-authoritative). Submit
+// is a normal form POST.
 (function () {
   const form = document.getElementById("bookingForm");
   const dataEl = document.getElementById("counsellors-data");
@@ -24,8 +23,6 @@
   const timeInput = document.getElementById("timeInput");
   const modeInput = document.getElementById("modeInput");
 
-  const picker = document.getElementById("counsellorPicker");
-  const availabilitySection = document.getElementById("availabilitySection");
   const calPrev = document.getElementById("calPrev");
   const calNext = document.getElementById("calNext");
   const calMonthLabel = document.getElementById("calMonthLabel");
@@ -33,20 +30,24 @@
   const slotGrid = document.getElementById("slotGrid");
   const slotEmpty = document.getElementById("slotEmpty");
   const modeFilter = document.getElementById("modeFilter");
-  const bookingSummary = document.getElementById("bookingSummary");
   const summaryCounsellor = document.getElementById("summaryCounsellor");
-  const summaryDatetime = document.getElementById("summaryDatetime");
+  const summaryDate = document.getElementById("summaryDate");
+  const summaryTime = document.getElementById("summaryTime");
   const summaryMode = document.getElementById("summaryMode");
   const confirmBtn = document.getElementById("confirmBtn");
 
   let selectedSlug = counsellorSlugInput.value || form.dataset.preselected || "";
-  let selectedDate = dateInput.value || ""; // "YYYY-MM-DD"
-  let selectedTime = timeInput.value || ""; // "HH:MM[:SS]"
+  let selectedDate = dateInput.value || "";
+  let selectedTime = timeInput.value || "";
   let selectedMode = modeInput.value || "";
-  let currentMonth = null; // first-of-month Date, local
+  let currentMonth = null;
+
+  const counsellor = bySlug[selectedSlug];
+  if (!counsellor) return;
 
   const pad2 = (n) => String(n).padStart(2, "0");
-  const isoDate = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  const isoDate = (d) =>
+    `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const firstOfMonth = (d) => new Date(d.getFullYear(), d.getMonth(), 1);
   const addDays = (d, n) => {
@@ -54,7 +55,8 @@
     copy.setDate(copy.getDate() + n);
     return copy;
   };
-  const sameMonth = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
+  const sameMonth = (a, b) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
 
   const formatTime = (hhmmss) => {
     const [hStr, mStr] = hhmmss.split(":");
@@ -64,9 +66,13 @@
     return `${h}:${mStr} ${suffix}`;
   };
 
-  const formatDateLabel = (iso) => {
+  const formatDateFull = (iso) => {
     const d = new Date(`${iso}T00:00:00`);
-    return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+    return d.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
   };
 
   const today = startOfDay(new Date());
@@ -74,46 +80,8 @@
   const minMonth = firstOfMonth(today);
   const maxMonth = firstOfMonth(horizon);
 
-  function selectCounsellor(slug, opts) {
-    opts = opts || {};
-    const counsellor = bySlug[slug];
-    if (!counsellor) return;
-
-    selectedSlug = slug;
-    counsellorSlugInput.value = slug;
-
-    Array.from(picker.querySelectorAll(".counsellor-option")).forEach((btn) => {
-      btn.classList.toggle("is-selected", btn.dataset.slug === slug);
-    });
-
-    if (!opts.preserveSelection) {
-      selectedDate = "";
-      selectedTime = "";
-      selectedMode = "";
-      dateInput.value = "";
-      timeInput.value = "";
-      modeInput.value = "";
-      slotGrid.replaceChildren();
-      slotEmpty.hidden = false;
-      slotEmpty.textContent = "Pick a date to see available times.";
-    }
-
-    renderModeChips(counsellor);
-    availabilitySection.hidden = false;
-
-    currentMonth = selectedDate ? firstOfMonth(new Date(`${selectedDate}T00:00:00`)) : minMonth;
-    renderCalendar(counsellor);
-
-    if (selectedDate) {
-      fetchAvailability(counsellor, selectedDate, { preserveSelection: true });
-    }
-
-    updateSummary();
-  }
-
-  function renderModeChips(counsellor) {
-    modeFilter.querySelectorAll(".mode-chip").forEach((el) => el.remove());
-    modeFilter.hidden = false;
+  function renderModeChips() {
+    modeFilter.replaceChildren();
 
     counsellor.modes.forEach((m) => {
       const chip = document.createElement("button");
@@ -124,8 +92,9 @@
       chip.addEventListener("click", () => {
         selectedMode = m;
         modeInput.value = m;
-        modeFilter.querySelectorAll(".mode-chip").forEach((el) => el.classList.remove("is-active"));
-        chip.classList.add("is-active");
+        modeFilter.querySelectorAll(".mode-chip").forEach((el) => {
+          el.classList.toggle("is-active", el.dataset.mode === m);
+        });
         updateSummary();
       });
       modeFilter.appendChild(chip);
@@ -135,11 +104,24 @@
       selectedMode = "";
       modeInput.value = "";
     }
+
+    // Default to the first offered mode so the flow has one less tap when
+    // the counsellor only offers one option (or as a sensible start).
+    if (!selectedMode && counsellor.modes.length === 1) {
+      selectedMode = counsellor.modes[0];
+      modeInput.value = selectedMode;
+      modeFilter
+        .querySelector(`.mode-chip[data-mode="${selectedMode}"]`)
+        ?.classList.add("is-active");
+    }
   }
 
-  function renderCalendar(counsellor) {
+  function renderCalendar() {
     calGrid.replaceChildren();
-    calMonthLabel.textContent = currentMonth.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+    calMonthLabel.textContent = currentMonth.toLocaleDateString("en-GB", {
+      month: "long",
+      year: "numeric",
+    });
     calPrev.disabled = sameMonth(currentMonth, minMonth) || currentMonth < minMonth;
     calNext.disabled = sameMonth(currentMonth, maxMonth);
 
@@ -151,16 +133,21 @@
     });
 
     const firstDay = new Date(currentMonth);
-    const leadingBlanks = (firstDay.getDay() + 6) % 7; // Mon=0..Sun=6
+    const leadingBlanks = (firstDay.getDay() + 6) % 7;
     for (let i = 0; i < leadingBlanks; i++) {
       calGrid.appendChild(document.createElement("span"));
     }
 
-    const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+    const daysInMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() + 1,
+      0
+    ).getDate();
+
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
       const iso = isoDate(date);
-      const pyWeekday = (date.getDay() + 6) % 7; // Mon=0..Sun=6, matches core/data.py
+      const pyWeekday = (date.getDay() + 6) % 7;
       const hasHours = (counsellor.working_hours[String(pyWeekday)] || []).length > 0;
       const inWindow = date >= today && date <= horizon;
 
@@ -177,14 +164,14 @@
         btn.addEventListener("click", () => {
           calGrid.querySelectorAll(".cal-day").forEach((el) => el.classList.remove("is-selected"));
           btn.classList.add("is-selected");
-          fetchAvailability(counsellor, iso, { preserveSelection: false });
+          fetchAvailability(iso, { preserveSelection: false });
         });
       }
       calGrid.appendChild(btn);
     }
   }
 
-  function fetchAvailability(counsellor, iso, opts) {
+  function fetchAvailability(iso, opts) {
     selectedDate = iso;
     dateInput.value = iso;
     if (!opts.preserveSelection) {
@@ -196,7 +183,9 @@
     slotEmpty.textContent = "Loading available times…";
     updateSummary();
 
-    fetch(`/book/availability/?counsellor=${encodeURIComponent(counsellor.slug)}&date=${iso}`)
+    fetch(
+      `/book/availability/?counsellor=${encodeURIComponent(counsellor.slug)}&date=${iso}`
+    )
       .then((res) => {
         if (!res.ok) throw new Error(`availability ${res.status}`);
         return res.json();
@@ -221,7 +210,9 @@
       const timePart = iso.slice(11, 19);
       const chip = document.createElement("button");
       chip.type = "button";
-      chip.className = "slot-chip" + (timePart.slice(0, 5) === selectedTime.slice(0, 5) ? " is-selected" : "");
+      chip.className =
+        "slot-chip" +
+        (timePart.slice(0, 5) === selectedTime.slice(0, 5) ? " is-selected" : "");
       chip.textContent = formatTime(timePart);
       chip.addEventListener("click", () => {
         selectedTime = timePart;
@@ -235,35 +226,40 @@
   }
 
   function updateSummary() {
-    const counsellor = bySlug[selectedSlug];
-    const ready = counsellor && selectedDate && selectedTime && selectedMode;
-
-    confirmBtn.disabled = !ready;
-    bookingSummary.hidden = !ready;
-    if (!ready) return;
-
     summaryCounsellor.textContent = counsellor.name;
-    summaryDatetime.textContent = `${formatDateLabel(selectedDate)} · ${formatTime(selectedTime)}`;
-    summaryMode.textContent = selectedMode === "in-person" ? "In person" : "Online";
-  }
+    summaryMode.textContent =
+      selectedMode === "in-person"
+        ? "In person"
+        : selectedMode === "online"
+          ? "Online"
+          : "—";
+    summaryDate.textContent = selectedDate ? formatDateFull(selectedDate) : "—";
+    summaryTime.textContent = selectedTime ? formatTime(selectedTime) : "—";
 
-  picker.querySelectorAll(".counsellor-option").forEach((btn) => {
-    btn.addEventListener("click", () => selectCounsellor(btn.dataset.slug));
-  });
+    const ready = Boolean(selectedDate && selectedTime && selectedMode);
+    confirmBtn.disabled = !ready;
+  }
 
   calPrev.addEventListener("click", () => {
     if (calPrev.disabled) return;
     currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
-    renderCalendar(bySlug[selectedSlug]);
+    renderCalendar();
   });
 
   calNext.addEventListener("click", () => {
     if (calNext.disabled) return;
     currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
-    renderCalendar(bySlug[selectedSlug]);
+    renderCalendar();
   });
 
-  if (selectedSlug && bySlug[selectedSlug]) {
-    selectCounsellor(selectedSlug, { preserveSelection: true });
+  counsellorSlugInput.value = counsellor.slug;
+  renderModeChips();
+  currentMonth = selectedDate
+    ? firstOfMonth(new Date(`${selectedDate}T00:00:00`))
+    : minMonth;
+  renderCalendar();
+  if (selectedDate) {
+    fetchAvailability(selectedDate, { preserveSelection: true });
   }
+  updateSummary();
 })();

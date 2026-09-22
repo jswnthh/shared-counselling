@@ -72,6 +72,7 @@ class BookingViewTests(TestCase):
             "mode": "online",
             "client_name": "Test Client",
             "client_email": "client@example.com",
+            "client_phone": "9876543210",
         }
 
     def test_prefills_counsellor_from_query_param(self):
@@ -85,7 +86,22 @@ class BookingViewTests(TestCase):
         self.assertEqual(Booking.objects.count(), 1)
         booking = Booking.objects.get()
         self.assertEqual(booking.counsellor_slug, self.counsellor["slug"])
+        self.assertEqual(booking.client_phone, "9876543210")
         self.assertEqual(response.url, reverse("book_confirmed", args=[booking.pk]))
+
+    def test_post_sends_confirmation_email(self):
+        from django.core import mail
+
+        response = self.client.post(reverse("book"), self._post_data())
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(mail.outbox), 2)
+        recipients = {tuple(m.to) for m in mail.outbox}
+        self.assertIn(("sharedcounselling@gmail.com",), recipients)
+        self.assertIn(("client@example.com",), recipients)
+        practice = next(m for m in mail.outbox if m.to == ["sharedcounselling@gmail.com"])
+        client = next(m for m in mail.outbox if m.to == ["client@example.com"])
+        self.assertIn("New booking", practice.subject)
+        self.assertIn("Booking confirmed", client.subject)
 
     def test_duplicate_post_for_same_slot_is_rejected(self):
         first = self.client.post(reverse("book"), self._post_data())
@@ -102,11 +118,11 @@ class BookingViewTests(TestCase):
         self.assertEqual(Booking.objects.count(), 0)
         self.assertContains(response, "not currently accepting bookings", status_code=200)
 
-    def test_inactive_counsellor_query_param_is_ignored(self):
+    def test_inactive_counsellor_query_param_redirects_to_directory(self):
         Counsellor.objects.filter(slug=self.counsellor["slug"]).update(is_active=False)
         response = self.client.get(reverse("book") + f"?counsellor={self.counsellor['slug']}")
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, f'data-slug="{self.counsellor["slug"]}"')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("counsellors"))
 
 
 class BookConfirmedTests(TestCase):

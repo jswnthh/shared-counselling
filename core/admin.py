@@ -156,9 +156,9 @@ class CounsellorAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ("start_at", "counsellor_slug", "client_name", "mode", "status")
+    list_display = ("start_at", "counsellor_slug", "client_name", "client_phone", "mode", "status")
     list_filter = ("status", "mode", "counsellor_slug")
-    search_fields = ("client_name", "client_email", "counsellor_slug")
+    search_fields = ("client_name", "client_email", "client_phone", "counsellor_slug")
     date_hierarchy = "start_at"
     readonly_fields = ("created_at",)
 

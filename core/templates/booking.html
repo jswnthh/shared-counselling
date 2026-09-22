@@ -2,33 +2,23 @@
 {% load static %}
 
 {% block title %}Book a session — Shared Counselling{% endblock %}
-{% block meta_description %}Book a session with one of our counsellors — pick who you'd like to see, then a date and time that works for you.{% endblock %}
+{% block meta_description %}Book a session with {{ selected_counsellor.name }} — pick a mode, date and time that works for you.{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/booking.css' %}" />{% endblock %}
 
 {% block content %}
-      <section class="service-hero" aria-labelledby="booking-heading">
-        <div class="wrap">
-          <p class="eyebrow">Book a session</p>
-          <h1 id="booking-heading">Find a time that works.</h1>
-          <p class="lede">
-            Choose a counsellor, then a date and time — you'll see their real
-            availability before you confirm anything.
-          </p>
-        </div>
-      </section>
-
-      <section class="booking-section" aria-labelledby="booking-form-heading">
-        <div class="wrap">
+      <div class="booking-shell">
+        <div class="wrap booking-shell-inner">
           <h2 id="booking-form-heading" class="sr-only">Booking form</h2>
 
           <form
             class="booking-form"
             method="post"
-            action="{% url 'book' %}"
+            action="{% url 'book' %}?counsellor={{ selected_counsellor.slug }}"
             id="bookingForm"
-            data-preselected="{{ preselected_slug }}"
+            data-preselected="{{ selected_counsellor.slug }}"
             data-window-days="{{ booking_window_days }}"
             data-booking-horizon="{{ booking_horizon }}"
+            data-session-minutes="{{ session_length_minutes }}"
           >
             {% csrf_token %}
 
@@ -42,76 +32,97 @@
             </div>
             {% endif %}
 
-            <input type="hidden" name="counsellor_slug" id="counsellorSlugInput" value="{{ form.counsellor_slug.value|default:'' }}" />
+            <input type="hidden" name="counsellor_slug" id="counsellorSlugInput" value="{{ selected_counsellor.slug }}" />
             <input type="hidden" name="date" id="dateInput" value="{{ form.date.value|default:'' }}" />
             <input type="hidden" name="time" id="timeInput" value="{{ form.time.value|default:'' }}" />
             <input type="hidden" name="mode" id="modeInput" value="{{ form.mode.value|default:'' }}" />
 
-            <div class="picker-block">
-              <p class="filter-label">Choose a counsellor</p>
-              <div class="counsellor-picker" id="counsellorPicker" role="group" aria-label="Choose a counsellor">
-                {% for c in counsellors_json %}
-                <button
-                  type="button"
-                  class="counsellor-option{% if c.slug == preselected_slug %} is-selected{% endif %}"
-                  data-slug="{{ c.slug }}"
-                >
-                  <img src="{{ c.photo }}" width="52" height="52" loading="lazy" decoding="async" alt="" aria-hidden="true" />
-                  <span class="counsellor-option-text">
-                    <strong>{{ c.name }}</strong>
-                    <small>{{ c.credentials }}</small>
-                  </span>
-                </button>
-                {% endfor %}
-              </div>
-            </div>
+            <div class="booking-col booking-col-main">
+              <header class="booking-intro" aria-labelledby="booking-heading">
+                <p class="eyebrow">Book a session</p>
+                <h1 id="booking-heading">Find a time that works.</h1>
+                <p class="lede">
+                  Choose how you'd like to meet, then pick a date and time from
+                  {{ selected_counsellor.short_name|default:selected_counsellor.name }}'s availability.
+                </p>
+              </header>
 
-            <div class="availability" id="availabilitySection" hidden>
-              <div class="cal-panel">
-                <div class="cal-nav">
-                  <button type="button" class="cal-nav-btn" id="calPrev" aria-label="Previous month">‹</button>
-                  <span id="calMonthLabel"></span>
-                  <button type="button" class="cal-nav-btn" id="calNext" aria-label="Next month">›</button>
-                </div>
-                <div class="cal-grid" id="calGrid" role="grid" aria-label="Choose a date"></div>
-              </div>
-
-              <div class="slot-panel">
-                <p class="filter-label">Available times</p>
-                <div class="slot-grid" id="slotGrid"></div>
-                <p class="slot-empty" id="slotEmpty">Pick a date to see available times.</p>
-
-                <div class="mode-filter" id="modeFilter" role="group" aria-label="Session mode" hidden>
-                  <span class="filter-label">Mode</span>
+              <div class="booking-with" aria-label="Booking with">
+                <p class="filter-label">Booking with</p>
+                <div class="selected-counsellor">
+                  <img
+                    src="{{ selected_counsellor.photo }}"
+                    width="48"
+                    height="48"
+                    alt=""
+                    decoding="async"
+                    aria-hidden="true"
+                  />
+                  <div class="selected-counsellor-text">
+                    <strong>{{ selected_counsellor.name }}</strong>
+                    <span>{{ selected_counsellor.credentials }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="booking-summary" id="bookingSummary" hidden>
-              <p class="summary-row"><span>Counsellor</span><strong id="summaryCounsellor"></strong></p>
-              <p class="summary-row"><span>Date &amp; time</span><strong id="summaryDatetime"></strong></p>
-              <p class="summary-row"><span>Mode</span><strong id="summaryMode"></strong></p>
-              <p class="summary-row"><span>Fee</span><strong>{{ session_fee_display }}</strong></p>
-              <p class="fee-note">Fee can be discussed and adjusted based on your circumstances — just ask your counsellor.</p>
-            </div>
-
-            <div class="contact-fields">
-              <div class="field">
-                <label class="field-label" for="clientName">Your name</label>
-                <input class="field-input" type="text" id="clientName" name="client_name" value="{{ form.client_name.value|default:'' }}" required />
-                {% for error in form.client_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+              <div class="mode-block">
+                <p class="filter-label" id="modeLabel">Appointment mode</p>
+                <div class="mode-filter" id="modeFilter" role="group" aria-labelledby="modeLabel"></div>
               </div>
-              <div class="field">
-                <label class="field-label" for="clientEmail">Email</label>
-                <input class="field-input" type="email" id="clientEmail" name="client_email" value="{{ form.client_email.value|default:'' }}" required />
-                {% for error in form.client_email.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+              <div class="availability-block" id="availabilitySection">
+                <div class="cal-panel">
+                  <p class="filter-label">Choose a date</p>
+                  <div class="cal-nav">
+                    <button type="button" class="cal-nav-btn" id="calPrev" aria-label="Previous month">‹</button>
+                    <span id="calMonthLabel"></span>
+                    <button type="button" class="cal-nav-btn" id="calNext" aria-label="Next month">›</button>
+                  </div>
+                  <div class="cal-grid" id="calGrid" role="grid" aria-label="Choose a date"></div>
+                </div>
+
+                <aside class="booking-register" aria-label="Confirm your details">
+                  <div class="booking-summary" id="bookingSummary">
+                    <p class="filter-label">Appointment summary</p>
+                    <p class="summary-row"><span>Counsellor</span><strong id="summaryCounsellor">{{ selected_counsellor.name }}</strong></p>
+                    <p class="summary-row"><span>Mode</span><strong id="summaryMode">—</strong></p>
+                    <p class="summary-row"><span>Date</span><strong id="summaryDate">—</strong></p>
+                    <p class="summary-row"><span>Time</span><strong id="summaryTime">—</strong></p>
+                    <p class="summary-row"><span>Duration</span><strong>{{ session_length_minutes }} min</strong></p>
+                    <p class="summary-row"><span>Fee</span><strong>{{ session_fee_display }}</strong></p>
+                  </div>
+
+                  <div class="contact-fields">
+                    <div class="field">
+                      <label class="field-label" for="clientName">Your name</label>
+                      <input class="field-input" type="text" id="clientName" name="client_name" value="{{ form.client_name.value|default:'' }}" autocomplete="name" required />
+                      {% for error in form.client_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                    </div>
+                    <div class="field">
+                      <label class="field-label" for="clientEmail">Email</label>
+                      <input class="field-input" type="email" id="clientEmail" name="client_email" value="{{ form.client_email.value|default:'' }}" autocomplete="email" required />
+                      {% for error in form.client_email.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                    </div>
+                    <div class="field">
+                      <label class="field-label" for="clientPhone">Mobile number</label>
+                      <input class="field-input" type="tel" id="clientPhone" name="client_phone" value="{{ form.client_phone.value|default:'' }}" autocomplete="tel" inputmode="tel" required />
+                      {% for error in form.client_phone.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-dark" id="confirmBtn" disabled>Confirm booking</button>
+                </aside>
+
+                <div class="slot-panel">
+                  <p class="filter-label">Available times</p>
+                  <div class="slot-grid" id="slotGrid"></div>
+                  <p class="slot-empty" id="slotEmpty">Select a date to view available times</p>
+                </div>
               </div>
             </div>
-
-            <button type="submit" class="btn btn-dark" id="confirmBtn" disabled>Confirm booking</button>
           </form>
         </div>
-      </section>
+      </div>
 {% endblock %}
 
 {% block extra_js %}

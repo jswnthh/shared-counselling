@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+import re
 
 from django.db import IntegrityError, transaction
 from django.http import Http404, HttpResponse, JsonResponse
@@ -7,11 +8,38 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods
 
+from .booking_email import send_booking_emails
 from .calendar_sync import create_calendar_event
 from .data import get_counsellor_by_slug, get_counsellors, get_services, get_topic_labels
 from .forms import BookingForm
 from .models import Booking
 from .scheduling import BOOKING_WINDOW_DAYS, SESSION_FEE_DISPLAY, SESSION_LENGTH_MINUTES, get_available_slots
+
+# Digits only for https://wa.me/<number> (shared practice line until
+# counsellor-specific chat numbers exist).
+PRACTICE_CHAT_NUMBER = "917904221476"
+
+
+def _bio_paragraphs(bio):
+    """Split a packed bio into a few short paragraphs for the profile overlay."""
+    text = (bio or "").strip()
+    if not text:
+        return []
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+    if len(sentences) <= 1:
+        return [text]
+    if len(sentences) <= 4:
+        return sentences
+    # Cap at 4 paragraphs by folding leftover sentences into the last one.
+    head, tail = sentences[:3], sentences[3:]
+    return head + [" ".join(tail)]
+
+
+def _short_display_name(name):
+    cleaned = re.sub(r"^(Ms\.|Mr\.|Mrs\.|Dr\.)\s+", "", name or "", flags=re.IGNORECASE).strip()
+    if not cleaned:
+        return name or ""
+    return cleaned.split()[0]
 
 
 def _resolved_counsellor(counsellor, topic_labels):
@@ -26,6 +54,13 @@ def _resolved_counsellor(counsellor, topic_labels):
             topic_labels.get(topic_slug, topic_slug.replace("-", " ").title())
             for topic_slug in specialty_labels
         ],
+        "bio_paragraphs": _bio_paragraphs(counsellor.get("bio", "")),
+        "short_name": _short_display_name(counsellor.get("name", "")),
+        "chat_number": counsellor.get("chat_number") or PRACTICE_CHAT_NUMBER,
+        "whatsapp_enquire_text": (
+            "Hello, I would like to enquire about a counselling session with "
+            f"{_short_display_name(counsellor.get('name', ''))}."
+        ),
     }
 
 
@@ -68,22 +103,21 @@ def counsellors(request):
 
 @require_http_methods(["GET", "POST"])
 def book(request):
-    preselected_slug = request.GET.get("counsellor", "")
+    preselected_slug = request.GET.get("counsellor", "") or request.POST.get(
+        "counsellor_slug", ""
+    )
 
+    selected_counsellor = None
     if preselected_slug:
         selected_counsellor = get_counsellor_by_slug(
             preselected_slug,
             bookable_only=True,
         )
 
-        if selected_counsellor is None:
-            preselected_slug = ""
-            counsellor_list = get_counsellors(bookable_only=True)
-        else:
-            counsellor_list = [selected_counsellor]
-
-    else:
-        counsellor_list = get_counsellors(bookable_only=True)
+    # Booking assumes the counsellor was chosen on /counsellors/ (or a
+    # match card). Without a valid slug, send people back to pick one.
+    if selected_counsellor is None and request.method == "GET":
+        return redirect("counsellors")
 
     if request.method == "POST":
         form = BookingForm(request.POST)
@@ -100,6 +134,7 @@ def book(request):
                         counsellor_slug=form.cleaned_data["counsellor_slug"],
                         client_name=form.cleaned_data["client_name"],
                         client_email=form.cleaned_data["client_email"],
+                        client_phone=form.cleaned_data["client_phone"],
                         mode=form.cleaned_data["mode"],
                         start_at=start_at,
                         end_at=end_at,
@@ -111,25 +146,44 @@ def book(request):
                     "Sorry — that slot was just booked by someone else. "
                     "Please pick another time.",
                 )
+                selected_counsellor = get_counsellor_by_slug(
+                    form.data.get("counsellor_slug", ""),
+                    bookable_only=False,
+                ) or selected_counsellor
 
             else:
                 create_calendar_event(booking)
+                send_booking_emails(booking)
 
                 return redirect(
                     "book_confirmed",
                     booking_id=booking.pk,
                 )
+        else:
+            # Keep enough counsellor context to re-render the page even when
+            # the slug fails bookable_only checks (e.g. just flipped inactive).
+            selected_counsellor = get_counsellor_by_slug(
+                form.data.get("counsellor_slug", ""),
+                bookable_only=False,
+            ) or selected_counsellor
 
     else:
         form = BookingForm(
-            initial={"counsellor_slug": preselected_slug}
-            if preselected_slug
-            else None
+            initial={"counsellor_slug": selected_counsellor["slug"]}
         )
+
+    if selected_counsellor is None:
+        return redirect("counsellors")
+
+    counsellor_list = [selected_counsellor]
 
     context = {
         "form": form,
-
+        "selected_counsellor": {
+            **selected_counsellor,
+            "short_name": _short_display_name(selected_counsellor["name"]),
+            "photo": selected_counsellor["photo_thumb"],
+        },
         "counsellors_json": [
             {
                 "slug": c["slug"],
@@ -141,15 +195,14 @@ def book(request):
             }
             for c in counsellor_list
         ],
-
-        "preselected_slug": preselected_slug,
+        "preselected_slug": selected_counsellor["slug"],
         "booking_window_days": BOOKING_WINDOW_DAYS,
         "booking_horizon": (
             timezone.now()
             + timedelta(days=BOOKING_WINDOW_DAYS)
         ).isoformat(),
-
         "session_fee_display": SESSION_FEE_DISPLAY,
+        "session_length_minutes": SESSION_LENGTH_MINUTES,
     }
 
     return render(request, "booking.html", context)

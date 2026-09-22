@@ -1,24 +1,141 @@
-/* ---------- Booking form shell ---------- */
-.booking-section {
-  padding-top: 2rem !important;
-  padding-bottom: 7rem;
+/* ---------- Full-viewport booking shell (desktop) ---------- */
+body:has(.booking-shell) {
+  overflow: hidden;
+}
+
+body:has(.booking-shell) .site-footer {
+  display: none;
+}
+
+.booking-shell {
+  --booking-header-offset: 5.4rem;
+  height: calc(100dvh - var(--crisis-bar-h));
+  max-height: calc(100dvh - var(--crisis-bar-h));
+  padding: var(--booking-header-offset) 0 1rem;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.booking-shell-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .booking-form {
-  max-width: 760px;
-  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  max-width: none;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 2.4rem;
+  gap: 0.85rem;
+}
+
+.booking-form > .form-errors {
+  flex-shrink: 0;
+}
+
+.booking-col-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+/* ---------- Calendar row: calendar | registration ---------- */
+.availability-block {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-rows: auto auto;
+  gap: 0.85rem 1.15rem;
+  flex: 0 0 auto;
+  align-items: stretch;
+}
+
+.cal-panel {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0.85rem 0.95rem 0.95rem;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--slate) 10%, transparent);
+  border-radius: var(--radius-lg);
+  min-height: 0;
+}
+
+.booking-register {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  width: 280px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--slate) 10%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 0.9rem 0.95rem;
+  box-sizing: border-box;
+}
+
+.slot-panel {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.85rem 0.95rem 0.95rem;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--slate) 10%, transparent);
+  border-radius: var(--radius-lg);
+}
+
+/* ---------- Intro (compact) ---------- */
+.booking-intro .eyebrow {
+  margin: 0;
+}
+
+.booking-intro h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.55rem, 2.6vw, 2.15rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-top: 0.35rem;
+}
+
+.booking-intro .lede {
+  color: var(--ink-soft);
+  max-width: 42ch;
+  margin-top: 0.4rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.filter-label {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-bottom: 0.4rem;
 }
 
 .form-errors {
   background: color-mix(in srgb, #b3261e 10%, transparent);
   border: 1.5px solid color-mix(in srgb, #b3261e 35%, transparent);
   border-radius: var(--radius);
-  padding: 1rem 1.3rem;
+  padding: 0.7rem 1rem;
   color: #7a1f19;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
+  flex-shrink: 0;
 }
 
 .form-errors p {
@@ -26,48 +143,23 @@
 }
 
 .form-errors p + p {
-  margin-top: 0.3rem;
+  margin-top: 0.25rem;
 }
 
-/* ---------- Counsellor picker ---------- */
-.counsellor-picker {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.9rem;
-}
-
-.counsellor-option {
+/* ---------- Selected counsellor ---------- */
+.selected-counsellor {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
-  text-align: left;
+  gap: 0.7rem;
+  padding: 0.55rem 0.8rem;
   background: var(--surface);
-  border: 1.5px solid color-mix(in srgb, var(--slate) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--slate) 12%, transparent);
   border-radius: var(--radius);
-  padding: 0.9rem 1.1rem;
-  cursor: pointer;
-  font-family: var(--font-body);
-  color: var(--ink);
-  transition:
-    border-color 0.2s ease,
-    transform 0.2s ease,
-    background 0.2s ease;
 }
 
-.counsellor-option:hover {
-  border-color: var(--slate);
-  transform: translateY(-2px);
-}
-
-.counsellor-option.is-selected {
-  background: var(--slate);
-  border-color: var(--slate);
-  color: var(--sage);
-}
-
-.counsellor-option img {
-  width: 52px;
-  height: 52px;
+.selected-counsellor img {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   object-fit: cover;
   object-position: center top;
@@ -75,37 +167,71 @@
   flex-shrink: 0;
 }
 
-.counsellor-option-text {
+.selected-counsellor-text {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.05rem;
+  min-width: 0;
 }
 
-.counsellor-option-text strong {
+.selected-counsellor-text strong {
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 0.98rem;
+  letter-spacing: -0.01em;
 }
 
-.counsellor-option-text small {
+.selected-counsellor-text span {
   font-size: 0.8rem;
-  opacity: 0.8;
+  color: var(--ink-soft);
 }
 
-/* ---------- Availability: calendar + slots ---------- */
-.availability {
-  display: grid;
-  grid-template-columns: minmax(260px, 320px) 1fr;
-  gap: 2rem;
+/* ---------- Mode ---------- */
+.mode-block .mode-filter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
+
+.mode-chip {
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  font-weight: 500;
+  padding: 0.45rem 1.05rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--slate);
+  background: transparent;
+  color: var(--slate);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.mode-chip:hover {
+  background: color-mix(in srgb, var(--teal-soft) 55%, transparent);
+}
+
+.mode-chip.is-active {
+  background: color-mix(in srgb, var(--teal) 75%, var(--ink));
+  border-color: color-mix(in srgb, var(--teal) 75%, var(--ink));
+  color: var(--sage);
+}
+
+/* ---------- Calendar + slots (left) ---------- */
+/* (layout rules live with .availability-block above) */
 
 .cal-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.5rem;
   font-family: var(--font-display);
   font-weight: 500;
+  font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 .cal-nav-btn {
@@ -113,10 +239,10 @@
   background: transparent;
   color: var(--slate);
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1;
 }
 
@@ -128,26 +254,30 @@
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 0.35rem;
+  gap: 0.2rem;
+  align-content: start;
 }
 
 .cal-day {
   aspect-ratio: 1;
+  max-height: 2.4rem;
   display: grid;
   place-items: center;
   border-radius: 50%;
   border: none;
   background: transparent;
   font-family: var(--font-body);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   color: var(--ink);
   cursor: pointer;
 }
 
 .cal-day.is-label {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--ink-soft);
   cursor: default;
+  max-height: 1.4rem;
+  aspect-ratio: auto;
 }
 
 .cal-day:not(.is-label):not(.is-disabled):hover {
@@ -164,23 +294,27 @@
   color: var(--sage);
 }
 
+/* ---------- Times under calendar ---------- */
 .slot-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin: 0.9rem 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+  margin: 0;
+  align-content: flex-start;
 }
 
 .slot-chip {
   font-family: var(--font-body);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 500;
-  padding: 0.55rem 1.1rem;
+  padding: 0.42rem 0.85rem;
   border-radius: 999px;
   border: 1.5px solid color-mix(in srgb, var(--slate) 22%, transparent);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 40%, white);
   color: var(--slate);
   cursor: pointer;
+  width: 100%;
+  text-align: center;
   transition:
     background 0.2s ease,
     color 0.2s ease,
@@ -199,88 +333,62 @@
 
 .slot-empty {
   color: var(--ink-soft);
-  font-size: 0.92rem;
+  font-size: 0.88rem;
+  margin: 0;
 }
 
-/* ---------- Mode toggle (reuses .mode-chip pattern from service.css) ---------- */
-.mode-filter {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.7rem;
-}
-
-.mode-chip {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  font-weight: 500;
-  padding: 0.5rem 1.15rem;
-  border-radius: 999px;
-  border: 1.5px solid var(--slate);
-  background: transparent;
-  color: var(--slate);
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
-}
-
-.mode-chip.is-active {
-  background: color-mix(in srgb, var(--teal) 75%, var(--ink));
-  border-color: color-mix(in srgb, var(--teal) 75%, var(--ink));
-  color: var(--sage);
-}
-
-/* ---------- Summary + contact fields ---------- */
 .booking-summary {
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  padding: 1.6rem 1.8rem;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--surface) 55%, white);
+  border: 1px solid color-mix(in srgb, var(--slate) 10%, transparent);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.7rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.2rem;
+}
+
+.booking-summary .filter-label {
+  margin-bottom: 0.05rem;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   font-family: var(--font-body);
+  font-size: 0.8rem;
+  line-height: 1.3;
 }
 
 .summary-row span {
   color: var(--ink-soft);
 }
 
-.fee-note {
-  font-size: 0.82rem;
-  color: var(--ink-soft);
-  font-style: italic;
-}
-
 .contact-fields {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.2rem;
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+  flex-shrink: 0;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.15rem;
 }
 
 .field-label {
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   color: var(--ink-soft);
 }
 
 .field-input {
   font-family: var(--font-body);
-  font-size: 0.98rem;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius);
+  font-size: 0.84rem;
+  padding: 0.42rem 0.65rem;
+  border-radius: 10px;
   border: 1.5px solid color-mix(in srgb, var(--slate) 22%, transparent);
   background: #fff;
   color: var(--ink);
@@ -293,12 +401,17 @@
 
 .field-error {
   color: #b3261e;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   margin: 0;
 }
 
 #confirmBtn {
-  align-self: flex-start;
+  align-self: stretch;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 0.55rem 1rem;
+  font-size: 0.88rem;
 }
 
 #confirmBtn:disabled {
@@ -306,12 +419,75 @@
   cursor: not-allowed;
 }
 
+/* ---------- Mobile: stack + allow scroll ---------- */
 @media (max-width: 900px) {
-  .availability {
-    grid-template-columns: 1fr;
+  body:has(.booking-shell) {
+    overflow: auto;
   }
 
-  .contact-fields {
+  body:has(.booking-shell) .site-footer {
+    display: block;
+  }
+
+  .booking-shell {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 6.8rem 0 2.5rem;
+  }
+
+  .booking-shell-inner {
+    height: auto;
+  }
+
+  .booking-form {
+    height: auto;
+    gap: 1.15rem;
+  }
+
+  .booking-col-main {
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .availability-block {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
+  .cal-panel,
+  .booking-register,
+  .slot-panel {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .cal-panel {
+    order: 1;
+  }
+
+  .slot-panel {
+    order: 2;
+  }
+
+  .booking-register {
+    order: 3;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    padding: 1rem;
+  }
+
+  .cal-day {
+    max-height: none;
+  }
+
+  #confirmBtn {
+    margin-top: 0.35rem;
+  }
+
+  .booking-intro h1 {
+    font-size: clamp(1.7rem, 7vw, 2.2rem);
   }
 }

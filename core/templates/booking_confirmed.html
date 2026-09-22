@@ -11,9 +11,8 @@
           <p class="eyebrow">Booking confirmed</p>
           <h1 id="confirmed-heading">You're all set{% if booking.client_name %}, {{ booking.client_name }}{% endif %}.</h1>
           <p class="lede">
-            We've saved your session. This is a portfolio project, so no
-            confirmation email or payment was actually sent — but here's what
-            would be on it.
+            A confirmation email is on its way to
+            <strong>{{ booking.client_email }}</strong>. Here's what we booked.
           </p>
         </div>
       </section>
@@ -28,6 +27,9 @@
               <span>Mode</span>
               <strong>{% if booking.mode == "in-person" %}In person{% else %}Online{% endif %}</strong>
             </p>
+            {% if booking.client_phone %}
+            <p class="summary-row"><span>Mobile</span><strong>{{ booking.client_phone }}</strong></p>
+            {% endif %}
           </div>
           <p class="see-all-counsellors"><a href="{% url 'index' %}">Back to home →</a></p>
         </div>

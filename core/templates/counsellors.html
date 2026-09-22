@@ -3,7 +3,10 @@
 
 {% block title %}Meet our counsellors — Shared Counselling{% endblock %}
 {% block meta_description %}Meet the therapists behind Shared Counselling — their specialisms, approaches and how to book a first session.{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/counsellors.css' %}" />{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/counsellors.css' %}" />
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet" />
+{% endblock %}
 
 {% block content %}
       <section class="counsellors-hero" aria-labelledby="counsellors-page-heading">
@@ -11,88 +14,196 @@
           <p class="eyebrow">The practice</p>
           <h1 id="counsellors-page-heading">Meet our counsellors.</h1>
           <p class="lede">
-            Seven therapists, seven different lenses on care. Tap a row to
-            read more, or head to a
+            Seven therapists, seven different lenses on care. Browse a profile,
+            book a first session, or message us on WhatsApp — or head to a
             <a href="{% url 'index' %}#services">service</a> to get matched
             by focus area instead.
           </p>
         </div>
       </section>
 
-      <section class="counsellors-list-section" aria-labelledby="list-heading">
-        <div class="wrap">
+      <section class="counsellors-deck-section" aria-labelledby="list-heading">
+        <div class="wrap counsellors-deck-wrap">
           <h2 id="list-heading" class="sr-only">All counsellors</h2>
-          <ul class="counsellors-list">
+
+          <div class="counsellors-deck" role="list">
             {% for c in counsellors %}
-            <li class="counsellor-row" id="{{ c.slug }}">
-              <details class="counsellor-accordion">
-                <summary class="counsellor-summary">
-                  <!-- <img class="counsellor-photo" src="{{ c.photo }}" alt="" aria-hidden="true" /> -->
-                  <div class="summary-text">
+            <article
+              class="counsellor-card"
+              id="{{ c.slug }}"
+              role="listitem"
+              data-profile-index="{{ forloop.counter0 }}"
+            >
+              <div class="card-media">
+                <img
+                  class="card-photo"
+                  src="{{ c.photo }}"
+                  width="480"
+                  height="480"
+                  loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                  decoding="async"
+                  alt=""
+                  aria-hidden="true"
+                />
+              </div>
+
+              <div class="card-body">
+                <header class="card-header">
+                  <div class="card-title-block">
                     <h3>{{ c.name }}</h3>
                     <p class="designation">{{ c.credentials }}</p>
-                    <p class="status-line">
-                      <span class="status-dot {% if c.is_active %}is-active{% else %}is-inactive{% endif %}"></span>
-                      {% if c.is_active %}Accepting new clients{% else %}Not currently available{% endif %}
-                    </p>
-                    <p class="intro">{{ c.intro }}</p>
                   </div>
-                  {% if c.is_active %}
-                  <a class="row-cta btn btn-outline" href="{% url 'book' %}?counsellor={{ c.slug }}">Book with {{ c.name }}</a>
-                  {% else %}
-                  <span class="row-cta btn btn-outline is-disabled" aria-disabled="true">Not accepting bookings</span>
-                  {% endif %}
-                  <span class="chevron" aria-hidden="true"></span>
-                </summary>
+                  <p class="status-line">
+                    <span class="status-dot {% if c.is_active %}is-active{% else %}is-inactive{% endif %}"></span>
+                    {% if c.is_active %}Accepting new clients{% else %}Not currently available{% endif %}
+                  </p>
+                </header>
 
-                <div class="counsellor-detail">
-                  <img class="detail-photo" src="{{ c.photo }}" width="300" height="300" loading="lazy" decoding="async" alt="" aria-hidden="true" />
-                  <div class="detail-body">
-                    <p class="bio">{{ c.bio }}</p>
-                    <div class="detail-grid">
-                      <div>
-                        <p class="detail-label">Specialises in</p>
-                        <ul class="tag-list">
-                          {% for label in c.specialty_labels|slice:":6" %}
-                          <li>{{ label }}</li>
-                          {% endfor %}
-                        </ul>
-                        {% if c.specialty_labels|length > 6 %}
-                        <details class="tag-list-more">
-                          <summary>+{{ c.specialty_labels|length|add:"-6" }} more</summary>
-                          <ul class="tag-list">
-                            {% for label in c.specialty_labels|slice:"6:" %}
-                            <li>{{ label }}</li>
-                            {% endfor %}
-                          </ul>
-                        </details>
-                        {% endif %}
-                      </div>
-                      <div>
-                        <p class="detail-label">Modalities</p>
-                        <ul class="tag-list tag-list-quiet">
-                          {% for modality in c.modalities %}
-                          <li>{{ modality }}</li>
-                          {% endfor %}
-                        </ul>
-                      </div>
-                    </div>
-                    <p class="meta">
-                      {{ c.location }}
-                      ·
-                      {% for mode in c.modes %}{% if mode == "in-person" %}In person{% else %}Online{% endif %}{% if not forloop.last %} &amp; {% endif %}{% endfor %}
-                      ·
-                      {{ c.languages|join:", " }}
-                    </p>
-                  </div>
-                  {% if c.is_active %}
-                  <a class="detail-cta btn btn-outline" href="{% url 'book' %}?counsellor={{ c.slug }}">Book with {{ c.name }}</a>
+                <p class="intro">{{ c.intro }}</p>
+
+                <ul class="tag-list tag-list-preview" aria-label="Specialises in">
+                  {% for label in c.specialty_labels|slice:":4" %}
+                  <li>{{ label }}</li>
+                  {% endfor %}
+                  {% if c.specialty_labels|length > 4 %}
+                  <li class="tag-more">+{{ c.specialty_labels|length|add:"-4" }}</li>
                   {% endif %}
+                </ul>
+
+                <p class="meta">
+                  {{ c.location }}
+                  ·
+                  {% for mode in c.modes %}{% if mode == "in-person" %}In person{% else %}Online{% endif %}{% if not forloop.last %} &amp; {% endif %}{% endfor %}
+                  ·
+                  {{ c.languages|join:", " }}
+                </p>
+
+                <div class="card-footer">
+                  <button
+                    type="button"
+                    class="btn btn-outline card-read-more"
+                    data-open-profile="{{ forloop.counter0 }}"
+                    aria-haspopup="dialog"
+                  >
+                    Read more
+                  </button>
+                  {% include "includes/counsellor_actions.html" with c=c %}
                 </div>
-              </details>
-            </li>
+              </div>
+
+              <template class="profile-source">
+                <div class="profile-panel" data-slug="{{ c.slug }}">
+                  <div class="profile-layout">
+                    <div class="profile-portrait">
+                      <img
+                        src="{{ c.photo }}"
+                        width="320"
+                        height="400"
+                        alt=""
+                        decoding="async"
+                        aria-hidden="true"
+                      />
+                    </div>
+
+                    <div class="profile-stream">
+                      <section class="profile-hero">
+                        <div class="profile-intro">
+                          <h2 class="profile-name" id="profile-title-{{ c.slug }}">{{ c.name }}</h2>
+                          <p class="profile-credentials">{{ c.credentials }}</p>
+                          <div class="profile-bio">
+                            {% for paragraph in c.bio_paragraphs %}
+                            <p>{{ paragraph }}</p>
+                            {% empty %}
+                            <p>{{ c.bio }}</p>
+                            {% endfor %}
+                          </div>
+                          <div class="profile-actions">
+                            {% if c.is_active %}
+                            <a class="btn btn-book" href="{% url 'book' %}?counsellor={{ c.slug }}">
+                              <svg class="btn-book-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                                <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/>
+                                <path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                              </svg>
+                              Book with {{ c.short_name }}
+                            </a>
+                            {% else %}
+                            <span class="btn btn-outline is-disabled" aria-disabled="true">Not accepting bookings</span>
+                            {% endif %}
+                            <a
+                              class="btn btn-whatsapp-secondary"
+                              href="https://wa.me/{{ c.chat_number }}?text={{ c.whatsapp_enquire_text|urlencode }}"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="Chat with {{ c.name }} on WhatsApp (opens in a new tab)"
+                            >
+                              <svg class="whatsapp-icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                              </svg>
+                              Chat on WhatsApp
+                            </a>
+                          </div>
+                        </div>
+                      </section>
+                    </div>
+                  </div>
+
+                  <section class="profile-info-cards" aria-label="Practice details">
+                    <article class="info-card">
+                      <h3 class="info-card-title">
+                        <svg class="info-card-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5L12 14.8 7.5 16.7l.9-5L4.8 8.2l5-.7L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                        </svg>
+                        Specialties
+                      </h3>
+                      <ul class="profile-chips">
+                        {% for label in c.specialty_labels|slice:":10" %}
+                        <li>{{ label }}</li>
+                        {% endfor %}
+                      </ul>
+                    </article>
+
+                    <article class="info-card">
+                      <h3 class="info-card-title">
+                        <svg class="info-card-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M4 19V5M4 19h16M8 15V9M12 15V7M16 15v-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                        </svg>
+                        Therapeutic Approaches
+                      </h3>
+                      <ul class="profile-chips">
+                        {% for modality in c.modalities %}
+                        <li>{{ modality }}</li>
+                        {% endfor %}
+                      </ul>
+                    </article>
+                  </section>
+                </div>
+              </template>
+            </article>
             {% endfor %}
-          </ul>
+          </div>
         </div>
       </section>
+
+      <dialog class="counsellor-overlay" id="counsellor-overlay" aria-labelledby="overlay-heading">
+        <div class="overlay-chrome">
+          <p class="overlay-counter" id="overlay-counter" aria-live="polite"></p>
+          <button type="button" class="overlay-close" data-close-overlay aria-label="Close profile">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <button type="button" class="overlay-nav overlay-prev" data-overlay-prev aria-label="Previous counsellor">
+          <span aria-hidden="true">&#8592;</span>
+        </button>
+        <button type="button" class="overlay-nav overlay-next" data-overlay-next aria-label="Next counsellor">
+          <span aria-hidden="true">&#8594;</span>
+        </button>
+
+        <div class="overlay-scroll">
+          <h2 class="sr-only" id="overlay-heading">Counsellor profile</h2>
+          <div class="overlay-mount" id="overlay-mount"></div>
+        </div>
+      </dialog>
 {% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/counsellors.js' %}" defer></script>{% endblock %}

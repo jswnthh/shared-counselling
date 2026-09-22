@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 
 from django import forms
 from django.utils import timezone
@@ -15,12 +16,20 @@ class BookingForm(forms.Form):
     mode = forms.ChoiceField(choices=Booking.Mode.choices)
     client_name = forms.CharField(max_length=120)
     client_email = forms.EmailField()
+    client_phone = forms.CharField(max_length=20)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["counsellor_slug"].choices = [
             (c["slug"], c["name"]) for c in get_counsellors(bookable_only=True)
         ]
+
+    def clean_client_phone(self):
+        phone = (self.cleaned_data.get("client_phone") or "").strip()
+        digits = re.sub(r"\D", "", phone)
+        if len(digits) < 10:
+            raise forms.ValidationError("Enter a valid mobile number.")
+        return phone
 
     def clean(self):
         cleaned = super().clean()
