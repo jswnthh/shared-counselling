@@ -3,27 +3,22 @@
 
 {% block title %}Booking confirmed — Shared Counselling{% endblock %}
 {% block meta_description %}Your session is booked.{% endblock %}
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/service.css' %}" />
-<link rel="stylesheet" href="{% static 'css/booking.css' %}" />
-{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/booking.css' %}" />{% endblock %}
 
 {% block content %}
-      <section class="service-hero" aria-labelledby="confirmed-heading">
-        <div class="wrap">
-          <p class="eyebrow">Booking confirmed</p>
-          <h1 id="confirmed-heading">You're all set{% if booking.client_name %}, {{ booking.client_name }}{% endif %}.</h1>
-          <p class="lede">
-            A confirmation email is on its way to
-            <strong>{{ booking.client_email }}</strong>. Here's what we booked.
-          </p>
-        </div>
-      </section>
+      <section class="booking-confirmed" aria-labelledby="confirmed-heading">
+        <div class="wrap booking-confirmed-inner">
+          <header class="booking-confirmed-intro">
+            <p class="eyebrow">Booking confirmed</p>
+            <h1 id="confirmed-heading">You're all set{% if booking.client_name %}, {{ booking.client_name }}{% endif %}.</h1>
+            <p class="lede">
+              A confirmation email is on its way to
+              <strong>{{ booking.client_email }}</strong>. Here's what we booked.
+            </p>
+          </header>
 
-      <section class="booking-section" aria-labelledby="confirmed-details-heading">
-        <div class="wrap">
-          <h2 id="confirmed-details-heading" class="sr-only">Booking details</h2>
-          <div class="booking-summary booking-summary-static">
+          <div class="booking-summary booking-summary-static" aria-labelledby="confirmed-details-heading">
+            <h2 id="confirmed-details-heading" class="filter-label">Appointment summary</h2>
             <p class="summary-row"><span>Counsellor</span><strong>{{ counsellor_name }}</strong></p>
             <p class="summary-row"><span>Date &amp; time</span><strong>{{ booking.start_at|date:"l, j F Y · g:i A" }}</strong></p>
             <p class="summary-row">
@@ -34,7 +29,10 @@
             <p class="summary-row"><span>Mobile</span><strong>{{ booking.client_phone }}</strong></p>
             {% endif %}
           </div>
-          <p class="see-all-counsellors"><a href="{% url 'index' %}">Back to home →</a></p>
+
+          <p class="booking-confirmed-nav">
+            <a href="{% url 'index' %}">Back to home →</a>
+          </p>
         </div>
       </section>
 {% endblock %}

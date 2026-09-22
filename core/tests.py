@@ -103,6 +103,16 @@ class BookingViewTests(TestCase):
         self.assertIn("New booking", practice.subject)
         self.assertIn("sharedcounsellingteam@gmail.com", practice.to)
 
+    def test_post_redirects_even_if_email_raises(self):
+        from unittest.mock import patch
+
+        with patch("core.views.send_booking_emails", side_effect=OSError("smtp timeout")):
+            response = self.client.post(reverse("book"), self._post_data())
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Booking.objects.count(), 1)
+        booking = Booking.objects.get()
+        self.assertEqual(response.url, reverse("book_confirmed", args=[booking.pk]))
+
     def test_duplicate_post_for_same_slot_is_rejected(self):
         first = self.client.post(reverse("book"), self._post_data())
         self.assertEqual(first.status_code, 302)

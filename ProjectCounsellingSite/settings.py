@@ -272,6 +272,8 @@ EMAIL_PORT = int(os.environ.get("EMAIL_PORT") or 587)
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "sharedcounsellingteam@gmail.com"
 # Gmail app passwords are often copied with spaces; SMTP auth rejects those.
 EMAIL_HOST_PASSWORD = (os.environ.get("EMAIL_HOST_PASSWORD") or "").replace(" ", "")
+# Render/Gmail can hang forever without this; the booking request waits on SMTP.
+EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT") or 10)
 _email_use_tls = os.environ.get("EMAIL_USE_TLS", "true").lower() in ("true", "1", "yes")
 _email_use_ssl = os.environ.get("EMAIL_USE_SSL", "false").lower() in ("true", "1", "yes")
 # Port 465 is implicit SSL; 587 is STARTTLS. They cannot both be on.

@@ -367,6 +367,7 @@ body:has(.booking-shell) .site-footer {
 
 .booking-summary-static {
   max-width: 36rem;
+  width: 100%;
   padding: 1.15rem 1.25rem;
   gap: 0.55rem;
   background: var(--surface);
@@ -375,6 +376,46 @@ body:has(.booking-shell) .site-footer {
 
 .booking-summary-static .summary-row {
   font-size: 0.95rem;
+}
+
+.booking-confirmed {
+  padding: 9rem 0 5rem;
+}
+
+.booking-confirmed-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  max-width: 36rem;
+}
+
+.booking-confirmed-intro h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 4.2vw, 2.8rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-top: 0.7rem;
+}
+
+.booking-confirmed-intro .lede {
+  color: var(--ink-soft);
+  margin-top: 1rem;
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  max-width: none;
+}
+
+.booking-confirmed-nav {
+  margin: 0;
+}
+
+.booking-confirmed-nav a {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--slate);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .contact-fields {

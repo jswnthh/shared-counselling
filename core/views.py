@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+import logging
 import re
 
 from django.db import IntegrityError, transaction
@@ -14,6 +15,8 @@ from .data import get_counsellor_by_slug, get_counsellors, get_services, get_top
 from .forms import BookingForm
 from .models import Booking
 from .scheduling import BOOKING_WINDOW_DAYS, SESSION_FEE_DISPLAY, SESSION_LENGTH_MINUTES, get_available_slots
+
+logger = logging.getLogger(__name__)
 
 # Digits only for https://wa.me/<number> (shared practice line until
 # counsellor-specific chat numbers exist).
@@ -153,8 +156,13 @@ def book(request):
 
             else:
                 create_calendar_event(booking)
-                send_booking_emails(booking)
-
+                try:
+                    send_booking_emails(booking)
+                except Exception:
+                    logger.exception(
+                        "Booking %s saved but confirmation email failed",
+                        booking.pk,
+                    )
                 return redirect(
                     "book_confirmed",
                     booking_id=booking.pk,

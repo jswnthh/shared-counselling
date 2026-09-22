@@ -3,7 +3,7 @@
 import logging
 
 from django.conf import settings
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, get_connection
 from django.utils.formats import date_format
 
 from .data import get_counsellor_by_slug
@@ -33,36 +33,11 @@ def _practice_inboxes():
     return [addr.strip() for addr in str(raw).split(",") if addr.strip()]
 
 
-def _send_message(message, *, booking_id, kind):
-    if not settings.EMAIL_HOST:
-        logger.error(
-            "Cannot send booking %s email for booking %s: EMAIL_HOST is not set",
-            kind,
-            booking_id,
-        )
-        return
-    if not settings.EMAIL_HOST_PASSWORD:
-        logger.error(
-            "Cannot send booking %s email for booking %s: EMAIL_HOST_PASSWORD is not set",
-            kind,
-            booking_id,
-        )
-        return
-    try:
-        message.send(fail_silently=False)
-    except Exception:
-        logger.exception(
-            "Failed to send booking %s email for booking %s",
-            kind,
-            booking_id,
-        )
-
-
 def send_booking_emails(booking):
-    """Email a confirmation to the client (CC the practice) and a staff copy.
+    """Send client confirmation (CC practice) plus a staff copy.
 
-    Failures are logged but never raised — the booking itself already
-    succeeded, and a mail outage shouldn't roll that back or 500 the user.
+    Failures are logged and re-raised only if the caller does not catch
+    them. The booking row is already committed before this runs.
     """
     counsellor_name, mode_label, when = _booking_details(booking)
     details = (
@@ -91,27 +66,40 @@ def send_booking_emails(booking):
         cc=practice,
         reply_to=practice[:1],
     )
-    _send_message(
-        confirmation,
-        booking_id=booking.pk,
-        kind="client confirmation",
-    )
-
+    messages = [confirmation]
     if practice:
-        staff = EmailMessage(
-            subject=f"New booking · {booking.client_name} with {counsellor_name}",
-            body=(
-                f"A new session was booked on the site.\n\n"
-                f"{details}\n"
-                f"— Shared Counselling booking system\n"
-            ),
-            from_email=from_email,
-            to=practice,
+        messages.append(
+            EmailMessage(
+                subject=f"New booking · {booking.client_name} with {counsellor_name}",
+                body=(
+                    f"A new session was booked on the site.\n\n"
+                    f"{details}\n"
+                    f"— Shared Counselling booking system\n"
+                ),
+                from_email=from_email,
+                to=practice,
+            )
         )
-        _send_message(
-            staff,
-            booking_id=booking.pk,
-            kind="practice notification",
+
+    if not settings.EMAIL_HOST_PASSWORD and settings.EMAIL_BACKEND.endswith(
+        "smtp.EmailBackend"
+    ):
+        logger.error(
+            "Cannot send booking emails for booking %s: EMAIL_HOST_PASSWORD is not set",
+            booking.pk,
+        )
+        return
+
+    try:
+        connection = get_connection(fail_silently=False)
+        try:
+            connection.send_messages(messages)
+        finally:
+            connection.close()
+    except Exception:
+        logger.exception(
+            "Failed to send booking emails for booking %s",
+            booking.pk,
         )
 
 

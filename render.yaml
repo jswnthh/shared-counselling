@@ -12,7 +12,7 @@ services:
     runtime: python
     plan: free
     buildCommand: bash build.sh
-    startCommand: gunicorn ProjectCounsellingSite.wsgi:application --bind 0.0.0.0:$PORT
+    startCommand: gunicorn ProjectCounsellingSite.wsgi:application --bind 0.0.0.0:$PORT --timeout 25
     envVars:
       - key: DATABASE_URL
         fromDatabase:
