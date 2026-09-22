@@ -2,4 +2,8 @@
 db.sqlite3
 __pycache__/
 venv/
+.venv/
 media/counsellors/
+# Built by `collectstatic` on deploy (Render buildCommand). Never commit —
+# a stale tree here previously overrode fresh `static/` on production.
+staticfiles/
