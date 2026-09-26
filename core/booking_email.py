@@ -1,5 +1,3 @@
-"""Emails sent after a successful booking."""
-
 import logging
 
 from django.conf import settings

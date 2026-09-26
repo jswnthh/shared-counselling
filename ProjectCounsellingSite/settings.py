@@ -266,17 +266,15 @@ if _aws_bucket:
         MEDIA_URL = f"https://{_aws_bucket}.s3.amazonaws.com/"
 
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# Mail: prefer HTTPS APIs (Resend / Brevo / SendGrid) so Render's free plan
+# does not block outbound SMTP (ports 25/465/587). SMTP remains a local fallback.
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "sharedcounsellingteam@gmail.com"
+EMAIL_HOST_PASSWORD = (os.environ.get("EMAIL_HOST_PASSWORD") or "").replace(" ", "")
 EMAIL_HOST = os.environ.get("EMAIL_HOST") or "smtp.gmail.com"
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT") or 587)
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "sharedcounsellingteam@gmail.com"
-# Gmail app passwords are often copied with spaces; SMTP auth rejects those.
-EMAIL_HOST_PASSWORD = (os.environ.get("EMAIL_HOST_PASSWORD") or "").replace(" ", "")
-# Render/Gmail can hang forever without this; the booking request waits on SMTP.
 EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT") or 10)
 _email_use_tls = os.environ.get("EMAIL_USE_TLS", "true").lower() in ("true", "1", "yes")
 _email_use_ssl = os.environ.get("EMAIL_USE_SSL", "false").lower() in ("true", "1", "yes")
-# Port 465 is implicit SSL; 587 is STARTTLS. They cannot both be on.
 if EMAIL_PORT == 465:
     EMAIL_USE_SSL = True
     EMAIL_USE_TLS = False
@@ -288,9 +286,25 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
     f"Shared Counselling <{EMAIL_HOST_USER}>",
 )
-
-# Comma-separated practice inboxes that receive (and are CC'd on) bookings.
 BOOKING_NOTIFY_EMAIL = os.environ.get(
     "BOOKING_NOTIFY_EMAIL",
     "sharedcounsellingteam@gmail.com,sharedcounselling@gmail.com",
 )
+
+_resend_key = os.environ.get("RESEND_API_KEY", "")
+_brevo_key = os.environ.get("BREVO_API_KEY", "")
+_sendgrid_key = os.environ.get("SENDGRID_API_KEY", "")
+if _resend_key:
+    EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+    #ANYMAIL = {"RESEND_API_KEY": _resend_key}
+elif _brevo_key:
+    EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+    #ANYMAIL = {"BREVO_API_KEY": _brevo_key}
+elif _sendgrid_key:
+    EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
+    #ANYMAIL = {"SENDGRID_API_KEY": _sendgrid_key}
+else:
+    EMAIL_BACKEND = os.environ.get(
+        "EMAIL_BACKEND",
+        "django.core.mail.backends.smtp.EmailBackend",
+    )

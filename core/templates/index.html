@@ -2,222 +2,216 @@
 {% load static %}
 
 {% block content %}
-      <!-- Hero -->
-      <section class="hero" aria-labelledby="hero-heading">
-        <div class="hero-orb" aria-hidden="true">
-          <div class="orb"></div>
-        </div>
-        <div class="wrap">
-          <p class="eyebrow">A shared counselling practice</p>
+<!-- Hero -->
+<section class="hero" aria-labelledby="hero-heading">
+  <div class="hero-orb" aria-hidden="true">
+    <div class="orb"></div>
+  </div>
+  <div class="wrap">
+    <p class="eyebrow">A shared counselling practice</p>
 
-          <!-- Counsellor portraits: a team, not one voice -->
-          <div
-            class="hero-faces"
-            role="img"
-            aria-label="Portraits of the counsellors in our practice, drifting past one another"
-          >
-            <div class="faces-track" id="facesTrack">
-              {% for c in counsellor_previews %}
-              <img class="face-photo" src="{{ c.photo }}" width="160" height="160" decoding="async"{% if forloop.first %} fetchpriority="high"{% endif %} alt="" aria-hidden="true" />
-              {% endfor %}
-              {% for c in counsellor_previews %}
-              <img class="face-photo" src="{{ c.photo }}" width="160" height="160" decoding="async" loading="lazy" alt="" aria-hidden="true" />
-              {% endfor %}
-            </div>
-          </div>
+    <!-- Counsellor portraits: a team, not one voice -->
+    <div class="hero-faces" role="img"
+      aria-label="Portraits of the counsellors in our practice, drifting past one another">
+      <div class="faces-track" id="facesTrack">
+        {% for c in counsellor_previews %}
+        <img class="face-photo" src="{{ c.photo }}" width="160" height="160" decoding="async" {% if forloop.first %}
+          fetchpriority="high" {% endif %} alt="" aria-hidden="true" />
+        {% endfor %}
+        {% for c in counsellor_previews %}
+        <img class="face-photo" src="{{ c.photo }}" width="160" height="160" decoding="async" loading="lazy" alt=""
+          aria-hidden="true" />
+        {% endfor %}
+      </div>
+    </div>
 
-          <h1 id="hero-heading">
-            A team of counsellors making space for every kind of mind.
-          </h1>
-          <p class="lede">
-            Individual, couples and family therapy from qualified counsellors
-            with different specialisms — in person and online. One practice, one
-            promise: a safe place to be heard.
+    <h1 id="hero-heading">
+      A team of counsellors making space for every kind of mind.
+    </h1>
+    <p class="lede">
+      Individual, couples and family therapy from qualified counsellors
+      with different specialisms — in person and online. One practice, one
+      promise: a safe place to be heard.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-dark" href="{% url 'book' %}">Book a first session</a>
+      <a class="btn btn-outline" href="#services">Explore our services</a>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- Approach -->
+<section id="approach" class="approach" aria-labelledby="approach-heading">
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">How it works</p>
+      <h2 id="approach-heading">
+        Starting therapy, without the intimidation.
+      </h2>
+    </header>
+
+    <div class="approach-rows">
+      <div class="approach-row reveal">
+        <span class="num">01</span>
+        <h3>Pick a service</h3>
+        <p>
+          Choose the kind of support you're looking for; individual,
+          couples &amp; family, corporate wellness or academic workshops.
+        </p>
+      </div>
+      <div class="approach-row reveal">
+        <span class="num">02</span>
+        <h3>Select your focus areas</h3>
+        <p>
+          On each service page, choose up to five topics closest to what
+          you're dealing with and see your best-fit counsellors ranked instantly.
+        </p>
+      </div>
+      <div class="approach-row reveal">
+        <span class="num">03</span>
+        <h3>Meet at your pace</h3>
+        <p>
+          Your first session is a gentle introduction no pressure, no
+          long-term commitment. If it doesn't feel right, we'll help you
+          find someone who does.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Specialisms ticker + services -->
+<section id="services" class="services-band" aria-labelledby="services-heading">
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>Anxiety</span><span>Grief &amp; loss</span><span>Couples therapy</span><span>Burnout</span><span>Family
+        therapy</span><span>Trauma</span><span>Self-esteem</span><span>Life transitions</span>
+      <span>Anxiety</span><span>Grief &amp; loss</span><span>Couples therapy</span><span>Burnout</span><span>Family
+        therapy</span><span>Trauma</span><span>Self-esteem</span><span>Life transitions</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <header class="section-head reveal">
+      <p class="eyebrow">Start here</p>
+      <h2 id="services-heading">
+        Choose a kind of support.
+      </h2>
+      <p class="services-lead">
+        Each door opens onto the counsellors who work in that area. Pick the
+        support first and you'll meet a person on the next page, not before.
+      </p>
+    </header>
+
+    <div class="services-grid">
+      <a class="service-card reveal" href="{% url 'service_detail' 'individual-therapy' %}">
+        <div class="service-card-copy">
+          <p class="eyebrow">One-to-one</p>
+          <h3>Individual therapy</h3>
+          <p>
+            <!-- Weekly sessions for anxiety, low mood, burnout and everything
+                  harder to name. -->
           </p>
-          <div class="hero-actions">
-            <a class="btn btn-dark" href="{% url 'book' %}">Book a first session</a>
-            <a class="btn btn-outline" href="#services">Explore our services</a>
-          </div>
         </div>
-      </section>
+        <div class="visual" aria-hidden="true"></div>
+      </a>
 
-      <!-- Specialisms ticker -->
-      <div class="ticker" aria-hidden="true">
-        <div class="ticker-track">
-          <span>Anxiety</span><span>Grief &amp; loss</span
-          ><span>Couples therapy</span><span>Burnout</span
-          ><span>Family therapy</span><span>Trauma</span><span>Self-esteem</span
-          ><span>Life transitions</span> <span>Anxiety</span
-          ><span>Grief &amp; loss</span><span>Couples therapy</span
-          ><span>Burnout</span><span>Family therapy</span><span>Trauma</span
-          ><span>Self-esteem</span><span>Life transitions</span>
+      <a class="service-card reveal" href="{% url 'service_detail' 'couples-family' %}">
+        <div class="service-card-copy">
+          <p class="eyebrow">Together</p>
+          <h3>Couples &amp; family</h3>
+          <p>
+            <!-- Structured, judgment-free sessions to rebuild communication,
+                  trust and like. -->
+          </p>
         </div>
+        <div class="visual" aria-hidden="true"></div>
+      </a>
+
+      <a class="service-card reveal" href="{% url 'service_detail' 'corporate-wellness' %}">
+        <div class="service-card-copy">
+          <p class="eyebrow">For organisations</p>
+          <h3>Corporate wellness</h3>
+          <p>
+            <!-- On-site and virtual workshops helping teams manage stress and
+                  burnout. -->
+          </p>
+        </div>
+        <div class="visual" aria-hidden="true"></div>
+      </a>
+
+      <a class="service-card reveal" href="{% url 'service_detail' 'academic-workshops' %}">
+        <div class="service-card-copy">
+          <p class="eyebrow">For students</p>
+          <h3>Academic workshops</h3>
+          <p>
+            <!-- Practical sessions for schools and universities on exam
+                  pressure, emotional resilience and asking for help, led by
+                  qualified counsellors. -->
+          </p>
+        </div>
+        <div class="visual" aria-hidden="true"></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Meet our counsellors + booking prompt -->
+<!-- <section id="counsellors" class="practice-close" aria-labelledby="counsellors-heading">
+  <div class="wrap">
+    <a class="counsellors-teaser reveal" href="{% url 'counsellors' %}"
+      aria-label="Meet our counsellors — view all profiles">
+      <div class="counsellors-teaser-text">
+        <p class="eyebrow">The practice</p>
+        <h2 id="counsellors-heading">Meet our counsellors.</h2>
+        <p class="counsellors-sub">
+          Seven therapists specialising in anxiety, burnout, relationships
+          and more — each with a different lens on care.
+        </p>
       </div>
 
-      <!-- Services -->
-      <section id="services" aria-labelledby="services-heading">
-        <div class="wrap">
-          <header class="section-head reveal">
-            <p class="eyebrow">What we offer</p>
-            <h2 id="services-heading">
-              Different doors into the same safe room.
-            </h2>
-          </header>
-
-          <div class="services-grid">
-            <a class="service-card reveal" href="{% url 'service_detail' 'individual-therapy' %}">
-              <p class="eyebrow">One-to-one</p>
-              <h3>Individual therapy</h3>
-              <p>
-                Weekly sessions for anxiety, low mood, burnout and everything
-                harder to name — matched to the counsellor whose experience fits
-                you best.
-              </p>
-              <div class="visual" aria-hidden="true"></div>
-            </a>
-
-            <a class="service-card reveal" href="{% url 'service_detail' 'couples-family' %}">
-              <p class="eyebrow">Together</p>
-              <h3>Couples &amp; family</h3>
-              <p>
-                Structured, judgment-free sessions to rebuild communication and
-                trust, grounded in systemic and emotionally focused therapy.
-              </p>
-              <div class="visual" aria-hidden="true"></div>
-            </a>
-
-            <a class="service-card reveal" href="{% url 'service_detail' 'corporate-wellness' %}">
-              <p class="eyebrow">For organisations</p>
-              <h3>Corporate wellness</h3>
-              <p>
-                On-site and virtual workshops helping teams manage stress and
-                burnout, with confidential one-to-one support for employees who
-                need it.
-              </p>
-              <div class="visual" aria-hidden="true"></div>
-            </a>
-
-            <a class="service-card reveal" href="{% url 'service_detail' 'academic-workshops' %}">
-              <p class="eyebrow">For students</p>
-              <h3>Academic workshops</h3>
-              <p>
-                Practical sessions for schools and universities on exam
-                pressure, emotional resilience and asking for help, led by
-                qualified counsellors.
-              </p>
-              <div class="visual" aria-hidden="true"></div>
-            </a>
-          </div>
+      <div class="counsellors-teaser-visual">
+        <div class="preview-faces" aria-hidden="true">
+          {% for c in counsellor_previews %}
+          <span class="preview-face">
+            <img src="{{ c.photo }}" width="56" height="56" loading="lazy" decoding="async" alt="" />
+            <span class="status-dot {% if c.is_active %}is-active{% else %}is-inactive{% endif %}"></span>
+          </span>
+          {% endfor %}
         </div>
-      </section>
+        <span class="view-badge" aria-hidden="true">View</span>
+      </div>
+    </a>
+  </div> -->
 
-      <!-- Approach -->
-      <section
-        id="approach"
-        class="approach"
-        aria-labelledby="approach-heading"
-      >
-        <div class="wrap">
-          <header class="section-head reveal">
-            <p class="eyebrow">How it works</p>
-            <h2 id="approach-heading">
-              Starting therapy, without the intimidation.
-            </h2>
-          </header>
+  <!-- <div id="book" class="cta-marquee" aria-labelledby="cta-heading">
+    <h2 id="cta-heading" class="line" aria-label="The hardest part is reaching out. Start there.">
+      <div class="track" aria-hidden="true">
+        <span>The hardest part is reaching out. Start there.</span>
+        <span>The hardest part is reaching out. Start there.</span>
+      </div>
+    </h2>
+    <div class="actions">
+      <a class="btn btn-light" href="{% url 'book' %}">Book a first session</a>
+    </div>
+  </div> -->
+</section>
 
-          <div class="approach-rows">
-            <div class="approach-row reveal">
-              <span class="num">01</span>
-              <h3>Pick a service</h3>
-              <p>
-                Choose the kind of support you're looking for — individual,
-                couples &amp; family, corporate wellness or academic workshops.
-              </p>
-            </div>
-            <div class="approach-row reveal">
-              <span class="num">02</span>
-              <h3>Select your focus areas</h3>
-              <p>
-                On each service page, choose up to five topics closest to what
-                you're dealing with — from burnout to team conflict to exam
-                stress — and see your best-fit counsellors ranked instantly.
-              </p>
-            </div>
-            <div class="approach-row reveal">
-              <span class="num">03</span>
-              <h3>Meet at your pace</h3>
-              <p>
-                Your first session is a gentle introduction — no pressure, no
-                long-term commitment. If it doesn't feel right, we'll help you
-                find someone who does.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Meet our counsellors -->
-      <section id="counsellors" aria-labelledby="counsellors-heading">
-        <div class="wrap">
-          <a
-            class="counsellors-teaser reveal"
-            href="{% url 'counsellors' %}"
-            aria-label="Meet our counsellors — view all profiles"
-          >
-            <div class="counsellors-teaser-text">
-              <p class="eyebrow">The practice</p>
-              <h2 id="counsellors-heading">Meet our counsellors.</h2>
-              <p class="counsellors-sub">
-                Seven therapists specialising in anxiety, burnout, relationships
-                and more — each with a different lens on care.
-              </p>
-            </div>
-
-            <div class="counsellors-teaser-visual">
-              <div class="preview-faces" aria-hidden="true">
-                {% for c in counsellor_previews %}
-                <span class="preview-face">
-                  <img src="{{ c.photo }}" width="56" height="56" loading="lazy" decoding="async" alt="" />
-                  <span class="status-dot {% if c.is_active %}is-active{% else %}is-inactive{% endif %}"></span>
-                </span>
-                {% endfor %}
-              </div>
-              <span class="view-badge" aria-hidden="true">View</span>
-            </div>
-          </a>
-        </div>
-      </section>
-
-      <!-- CTA marquee -->
-      <section id="book" class="cta-marquee" aria-labelledby="cta-heading">
-        <h2
-          id="cta-heading"
-          class="line"
-          aria-label="The hardest part is reaching out. Start there."
-        >
-          <div class="track" aria-hidden="true">
-            <span>The hardest part is reaching out. Start there.</span>
-            <span>The hardest part is reaching out. Start there.</span>
-          </div>
-        </h2>
-        <div class="actions">
-          <a class="btn btn-light" href="{% url 'book' %}">Book a first session</a>
-        </div>
-      </section>
-
-      <!-- Closing statement -->
-      <section class="closing" aria-labelledby="closing-heading">
-        <div class="wrap reveal">
-          <p class="eyebrow">Shared Counselling</p>
-          <h2 id="closing-heading">
-            Life keeps moving.
-            <span class="muted">Make sure you're not carrying it alone.</span>
-          </h2>
-          <p>
-            Your first enquiry is free and completely confidential. Sessions
-            available weekdays and weekends, in person or online.
-          </p>
-          <a class="btn btn-dark" href="#">Get in touch</a>
-        </div>
-      </section>
+<!-- Closing statement -->
+<section class="closing" aria-labelledby="closing-heading">
+  <div class="wrap reveal">
+    <p class="eyebrow">Shared Counselling</p>
+    <h2 id="closing-heading">
+      Life keeps moving.
+      <span class="muted">Make sure you're not carrying it alone.</span>
+    </h2>
+    <p>
+      Your first enquiry is free and completely confidential. Sessions
+      available weekdays and weekends, in person or online.
+    </p>
+    <a class="btn btn-dark" href="#">Get in touch</a>
+  </div>
+</section>
 {% endblock %}

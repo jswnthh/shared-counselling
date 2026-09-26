@@ -8,3 +8,4 @@ boto3==1.43.74
 dj-database-url==3.0.1
 gunicorn==26.1.0
 psycopg[binary]==3.3.4
+django-anymail==13.0.1
