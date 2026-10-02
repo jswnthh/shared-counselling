@@ -294,17 +294,25 @@ BOOKING_NOTIFY_EMAIL = os.environ.get(
 _resend_key = os.environ.get("RESEND_API_KEY", "")
 _brevo_key = os.environ.get("BREVO_API_KEY", "")
 _sendgrid_key = os.environ.get("SENDGRID_API_KEY", "")
-if _resend_key:
+ANYMAIL = {}
+if os.environ.get("EMAIL_BACKEND"):
+    EMAIL_BACKEND = os.environ["EMAIL_BACKEND"]
+elif _resend_key:
     EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
-    #ANYMAIL = {"RESEND_API_KEY": _resend_key}
 elif _brevo_key:
     EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
-    #ANYMAIL = {"BREVO_API_KEY": _brevo_key}
 elif _sendgrid_key:
     EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
-    #ANYMAIL = {"SENDGRID_API_KEY": _sendgrid_key}
 else:
     EMAIL_BACKEND = os.environ.get(
         "EMAIL_BACKEND",
         "django.core.mail.backends.smtp.EmailBackend",
     )
+
+for key, value in (
+    ("RESEND_API_KEY", _resend_key),
+    ("BREVO_API_KEY", _brevo_key),
+    ("SENDGRID_API_KEY", _sendgrid_key),
+):
+    if value:
+        ANYMAIL[key] = value

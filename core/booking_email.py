@@ -3,6 +3,7 @@ import logging
 from django.conf import settings
 from django.core.mail import EmailMessage, get_connection
 from django.utils.formats import date_format
+from django.utils import timezone
 
 from .data import get_counsellor_by_slug
 from .scheduling import SESSION_LENGTH_MINUTES
@@ -18,7 +19,8 @@ def _booking_details(booking):
         else booking.counsellor_slug.replace("-", " ").title()
     )
     mode_label = "In person" if booking.mode == "in-person" else "Online"
-    when = date_format(booking.start_at, "l, j F Y · g:i A")
+    local_start = timezone.localtime(booking.start_at, timezone.get_default_timezone())
+    when = f"{date_format(local_start, 'l, j F Y · g:i A')} ({settings.TIME_ZONE})"
     return counsellor_name, mode_label, when
 
 
@@ -34,8 +36,7 @@ def _practice_inboxes():
 def send_booking_emails(booking):
     """Send client confirmation (CC practice) plus a staff copy.
 
-    Failures are logged and re-raised only if the caller does not catch
-    them. The booking row is already committed before this runs.
+    Delivery failures are logged without undoing the saved booking.
     """
     counsellor_name, mode_label, when = _booking_details(booking)
     details = (

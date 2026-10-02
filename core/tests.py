@@ -225,9 +225,11 @@ class CounsellorAdminPermissionTests(TestCase):
 
 class CounsellorPhotoTests(TestCase):
     def test_placeholder_urls_are_avif_and_paired(self):
-        row = Counsellor.objects.get(slug=get_counsellors()[0]["slug"])
-        row.photo_placeholder = "images/face_1.png"
-        row.save()
+        # Seeded counsellors have real portraits, which correctly take priority.
+        row = Counsellor.objects.create(
+            slug="placeholder-only", name="Placeholder Only",
+            photo_placeholder="images/face_1.png",
+        )
         data = get_counsellor_by_slug(row.slug)
         self.assertTrue(data["photo"].endswith("face_1.avif"))
         self.assertEqual(data["photo"], data["photo_thumb"])
@@ -301,4 +303,3 @@ class SitemapTests(TestCase):
         self.assertContains(response, "Disallow: /admin/")
         self.assertContains(response, "Sitemap:")
         self.assertContains(response, "/sitemap.xml")
-
