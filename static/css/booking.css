@@ -515,7 +515,7 @@ body:has(.booking-shell) .site-footer {
     grid-row: auto;
   }
 
-  .cal-panel {
+  .availability-block > .cal-panel {
     order: 1;
   }
 
