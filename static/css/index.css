@@ -176,11 +176,32 @@ a {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.62rem;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.1rem;
   letter-spacing: -0.02em;
   text-decoration: none;
+}
+
+.brand-mark {
+  position: relative;
+  flex: 0 0 auto;
+  width: 4.15rem;
+  height: 3.2rem;
+  overflow: hidden;
+  border-radius: 0.4rem;
+}
+
+.brand-mark img {
+  position: absolute;
+  top: -0.95rem;
+  left: -0.1rem;
+  width: 4.65rem;
+  max-width: none;
+  height: auto;
 }
 
 .brand em {
@@ -877,6 +898,17 @@ section {
 .site-footer .brand {
   color: var(--sage);
   font-size: 1.3rem;
+}
+
+.site-footer .brand-mark {
+  width: 4.85rem;
+  height: 3.05rem;
+}
+
+.site-footer .brand-mark img {
+  top: -1.08rem;
+  left: -0.12rem;
+  width: 5.3rem;
 }
 
 .site-footer nav ul {
