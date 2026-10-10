@@ -453,6 +453,64 @@ section {
   margin-top: 0.9rem;
 }
 
+/* ---------- About ---------- */
+.about {
+  padding-top: 11rem;
+  min-height: 76vh;
+}
+
+.about .section-head {
+  max-width: none;
+  text-align: center;
+}
+
+.about .section-head h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.4rem, 4vw, 3.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+  margin-top: 0.9rem;
+  max-width: 100ch;
+  align-items: center;
+}
+
+.about-statements {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.about-statement {
+  min-height: 17rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border: 1px solid color-mix(in srgb, var(--slate) 18%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--surface) 75%, transparent);
+}
+
+.about-statement > p:last-child {
+  max-width: 39ch;
+  margin-top: 2.2rem;
+  color: var(--ink-soft);
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  line-height: 1.55;
+}
+
+@media (max-width: 680px) {
+  .about {
+    padding-top: 9rem;
+  }
+
+  .about-statements {
+    grid-template-columns: 1fr;
+  }
+
+  .about-statement {
+    min-height: auto;
+  }
+}
+
 .services-lead {
   margin-top: 1.1rem;
   max-width: 46ch;

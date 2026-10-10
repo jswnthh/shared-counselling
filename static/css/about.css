@@ -1,0 +1,357 @@
+/* about.css: load AFTER index.css so these rules win at equal specificity */
+
+/* ---------- Intro ---------- */
+.about {
+    position: relative;
+    min-height: 0;
+    padding-bottom: 6rem;
+  }
+  
+  .about-intro {
+    text-align: center;
+    margin-bottom: 3.5rem;
+  }
+
+  .about-intro .section-head { margin-bottom: 0; }
+  
+  .about .about-intro h1 {
+    font-size: clamp(2.2rem, 6vw, 4.6rem);
+    line-height: 1.04;
+    max-width: 16ch;
+    margin-inline: auto;
+  }
+  
+  /* ---------- Vision / Mission switch ---------- */
+  .statements {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.6rem;
+  }
+  
+  .switch {
+    position: relative;
+    display: inline-flex;
+    padding: 0.35rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--slate) 16%, transparent);
+  }
+  
+  .switch-indicator {
+    position: absolute;
+    top: 0.35rem;
+    bottom: 0.35rem;
+    left: 0.35rem;
+    width: calc(50% - 0.35rem);
+    border-radius: 999px;
+    background: var(--slate-deep);
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  
+  .switch[data-active="1"] .switch-indicator {
+    transform: translateX(100%);
+  }
+  
+  .switch-tab {
+    position: relative;
+    z-index: 1;
+    min-width: 9.5rem;
+    padding: 0.8rem 1.6rem;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--ink-soft);
+    transition: color 0.3s;
+  }
+  
+  .switch-tab[aria-selected="true"] {
+    color: var(--sage);
+  }
+  
+  /* ---------- Stage ---------- */
+  .statement-stage {
+    width: 100%;
+    padding: clamp(2rem, 5vw, 4.5rem);
+    border-radius: var(--radius-lg);
+    background: var(--slate);
+    color: var(--sage);
+    transition: background 0.5s;
+  }
+  
+  .statement-stage[data-active="1"] {
+    background: var(--slate-deep);
+  }
+  
+  .statement-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 52rem;
+    margin-inline: auto;
+  }
+  
+  .statement-panel:not([hidden]) {
+    animation: panel-in 0.5s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  
+  .statement-text {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.3rem, 2.5vw, 2rem);
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+  }
+  
+  .statement-text mark {
+    padding: 0.05em 0.2em;
+    margin-inline: -0.2em;
+    border-radius: 0.3em;
+    background: none;
+    color: inherit;
+    border-bottom: 2px solid var(--teal-soft);
+    cursor: pointer;
+    transition:
+      background 0.3s,
+      opacity 0.3s,
+      border-color 0.3s;
+  }
+  
+  .statement-text mark.is-lit {
+    background: rgba(195, 211, 208, 0.24);
+    border-color: transparent;
+  }
+  
+  .statement-text mark.is-dim,
+  .statement-text.has-focus {
+    /* text itself stays readable; only non-selected highlights fade */
+  }
+  
+  .statement-text mark.is-dim {
+    opacity: 0.45;
+    border-color: transparent;
+  }
+  
+  /* ---------- Chips and note ---------- */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  
+  .chip {
+    padding: 0.6rem 1.2rem;
+    border: 1.5px solid rgba(226, 228, 210, 0.4);
+    border-radius: 999px;
+    background: none;
+    color: var(--sage);
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition:
+      background 0.25s,
+      color 0.25s,
+      transform 0.25s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  
+  .chip:hover {
+    background: rgba(226, 228, 210, 0.14);
+  }
+  
+  .chip[aria-pressed="true"] {
+    background: var(--sage);
+    border-color: var(--sage);
+    color: var(--slate-deep);
+    transform: translateY(-2px);
+  }
+  
+  .statement-stage :focus-visible {
+    outline-color: var(--teal-soft);
+  }
+  
+  .note {
+    min-height: 3.2em;
+    max-width: 44ch;
+    color: rgba(226, 228, 210, 0.8);
+    font-size: 1.05rem;
+    line-height: 1.55;
+  }
+  
+  .note.is-changing {
+    animation: note-in 0.35s ease;
+  }
+  
+  @keyframes note-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  
+  /* ---------- Journey ---------- */
+  .journey {
+    padding-top: 2rem;
+  }
+  
+  .journey-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: start;
+  }
+  
+  .journey .section-head {
+    position: sticky;
+    top: 8rem;
+    margin-bottom: 0;
+  }
+  
+  .journey-lead {
+    margin-top: 1.1rem;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+    max-width: 40ch;
+  }
+  
+  .steps {
+    border-top: 1px solid color-mix(in srgb, var(--slate) 22%, transparent);
+  }
+  
+  .step {
+    border-bottom: 1px solid color-mix(in srgb, var(--slate) 22%, transparent);
+  }
+  
+  .step summary {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding-block: 1.6rem;
+    list-style: none;
+    cursor: pointer;
+  }
+  
+  .step summary::-webkit-details-marker {
+    display: none;
+  }
+  
+  .step-num {
+    font-family: var(--font-display);
+    color: var(--teal);
+    font-weight: 500;
+  }
+  
+  .step-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+    letter-spacing: -0.02em;
+    transition: color 0.25s;
+  }
+  
+  .step summary:hover .step-title {
+    color: var(--teal);
+  }
+  
+  .step-icon {
+    position: relative;
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+  
+  .step-icon::before,
+  .step-icon::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--slate);
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  
+  .step-icon::after {
+    transform: rotate(90deg);
+  }
+  
+  .step[open] .step-icon::after {
+    transform: rotate(0deg);
+  }
+  
+  .step-body {
+    padding: 0 3.4rem 1.8rem 3.4rem;
+    max-width: 46ch;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+  }
+  
+  .step[open] .step-body {
+    animation: note-in 0.4s ease;
+  }
+  
+  /* ---------- Small screens ---------- */
+  @media (max-width: 860px) {
+    .journey-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .journey .section-head {
+      position: static;
+    }
+  }
+  
+  @media (max-width: 520px) {
+    .switch {
+      width: 100%;
+    }
+  
+    .switch-tab {
+      flex: 1;
+      min-width: 0;
+      padding-inline: 0.8rem;
+    }
+  
+    .step-body {
+      padding-inline: 0 0 1.6rem 3.4rem;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .switch-indicator,
+    .statement-stage,
+    .statement-text mark,
+    .chip,
+    .step-icon::before,
+    .step-icon::after {
+      transition: none;
+    }
+  
+    .statement-panel:not([hidden]),
+    .note.is-changing,
+    .step[open] .step-body {
+      animation: none;
+    }
+  }
