@@ -73,17 +73,6 @@ body {
   display: none;
 }
 
-@media (max-width: 600px) {
-  /* The full sentence wraps at this width and would overflow the bar's
-     fixed height — swap to a short one-liner instead of letting it grow. */
-  .crisis-bar-full {
-    display: none;
-  }
-
-  .crisis-bar-short {
-    display: inline;
-  }
-}
 
 a {
   color: inherit;
@@ -195,6 +184,7 @@ a {
   border-radius: 0.4rem;
 }
 
+
 .brand-mark img {
   position: absolute;
   top: -0.95rem;
@@ -234,6 +224,10 @@ a {
 }
 
 @media (max-width: 720px) {
+  .site-header .brand-name {
+    display: none;
+  }
+
   .site-nav ul li:not(:last-child) {
     display: none;
   }

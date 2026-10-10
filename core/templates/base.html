@@ -9,8 +9,6 @@
       name="description"
       content="{% block meta_description %}Shared Counselling is a practice of qualified counsellors offering individual, couples and family therapy, in person and online.{% endblock %}"
     />
-    <link rel="icon" type="image/png" href="{% static 'images/branding/favicon.png' %}" />
-    <link rel="apple-touch-icon" href="{% static 'images/branding/favicon.png' %}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -50,7 +48,7 @@
       <div class="wrap">
         <div>
           <a class="brand" href="{% url 'index' %}#top" aria-label="Shared Counselling — home">
-            <!-- <span class="brand-mark" aria-hidden="true"><img src="{% static 'images/branding/shared-counselling-logo.svg' %}" alt="" /></span> -->
+            <span class="brand-mark" aria-hidden="true"><img src="{% static 'images/branding/shared-counselling-logo.svg' %}" alt="" /></span>
             <span class="brand-name">Shared<em>Counselling</em></span>
           </a>
           <p>A Common Ground</p>
