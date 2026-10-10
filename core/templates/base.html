@@ -1,83 +1,87 @@
 {% load static %}
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Shared Counselling — A shared counselling practice{% endblock %}</title>
-    <meta
-      name="description"
-      content="{% block meta_description %}Shared Counselling is a practice of qualified counsellors offering individual, couples and family therapy, in person and online.{% endblock %}"
-    />
-    <link rel="icon" type="image/png" href="{% static 'images/branding/favicon.png' %}" />
-    <link rel="apple-touch-icon" href="{% static 'images/branding/favicon.png' %}" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Karla:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="{% static 'css/index.css' %}" />
-    {% block extra_css %}{% endblock %}
-  </head>
 
-  <body>
-    <div class="crisis-bar">
-      <span class="crisis-bar-full">In immediate crisis, call <a href="tel:104">104</a> (State Health Helpline) or <a href="tel:14416">14416</a> (Tele-MANAS Mental Health Helpline)</span>
-      <span class="crisis-bar-short">Crisis? Call <a href="tel:104">104</a> or <a href="tel:14416">14416</a></span>
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Shared Counselling — A shared counselling practice{% endblock %}</title>
+  <meta name="description"
+    content="{% block meta_description %}Shared Counselling is a practice of qualified counsellors offering individual, couples and family therapy, in person and online.{% endblock %}" />
+  <link rel="icon" type="image/png" href="{% static 'images/branding/favicon.png' %}" />
+  <link rel="apple-touch-icon" href="{% static 'images/branding/favicon.png' %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Karla:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/index.css' %}" />
+  {% block extra_css %}{% endblock %}
+</head>
 
-    <header class="site-header">
-      <a class="brand" href="{% url 'index' %}#top" aria-label="Shared Counselling — home">
-        <span class="brand-mark" aria-hidden="true"><img src="{% static 'images/branding/shared-counselling-logo.svg' %}" alt="" /></span>
-        <span class="brand-name">Shared<em>Counselling</em></span>
-      </a>
-      <nav class="site-nav" aria-label="Primary">
+<body>
+  <div class="crisis-bar">
+    <span class="crisis-bar-full">In immediate crisis, call <a href="tel:104">104</a> (State Health Helpline) or <a
+        href="tel:14416">14416</a> (Tele-MANAS Mental Health Helpline)</span>
+    <span class="crisis-bar-short">Crisis? Call <a href="tel:104">104</a> or <a href="tel:14416">14416</a></span>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="{% url 'index' %}#top" aria-label="Shared Counselling — home">
+      <span class="brand-mark" aria-hidden="true"><img src="{% static 'images/branding/shared-counselling-logo.svg' %}"
+          alt="" /></span>
+      <span class="brand-name">Shared<em>Counselling</em></span>
+    </a>
+
+    <nav class="site-nav" id="primary-navigation" aria-label="Primary">
+      <ul>
+        <li><a href="{% url 'index' %}#services">Services</a></li>
+        <!-- <li><a href="{% url 'index' %}#approach">Approach</a></li> -->
+        <li><a href="{% url 'counsellors' %}">Our counsellors</a></li>
+        <li><a href="{% url 'about' %}">Why we do?</a></li>
+      </ul>
+    </nav>
+    <a class="btn btn-dark header-book" href="{% url 'book' %}">Book a session</a>
+    <button class="menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false"
+      aria-controls="primary-navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <main id="top">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div>
+        <a class="brand" href="{% url 'index' %}#top" aria-label="Shared Counselling — home">
+          <span class="brand-name">Shared<em>Counselling</em></span>
+        </a>
+        <p>A Common Ground</p>
+      </div>
+      <nav aria-label="Footer">
         <ul>
           <li><a href="{% url 'index' %}#services">Services</a></li>
-          <!-- <li><a href="{% url 'index' %}#approach">Approach</a></li> -->
+          <li><a href="{% url 'index' %}#approach">Approach</a></li>
           <li><a href="{% url 'counsellors' %}">Our counsellors</a></li>
-          <li><a href="{% url 'about' %}">Why we do?</a></li>
-          <li><a href="{% url 'book' %}" class="btn btn-dark">Book a session</a></li>
+          <li><a href="{% url 'book' %}">Book a session</a></li>
         </ul>
       </nav>
-    </header>
+      <address>
+        <a href="mailto:sharedcounsellingteam@gmail.com">sharedcounsellingteam@gmail.com</a><br />
 
-    <main id="top">
-      {% block content %}{% endblock %}
-    </main>
+        <a href="https://wa.me/917904221476?text=Hello%2C%20I%20would%20like%20to%20know%20more%20about%20counselling%20sessions."
+          target="_blank">
+          +91 79042 21476
+        </a><br />
+      </address>
+      <small>© 2026 Shared Counselling.</small>
+    </div>
+  </footer>
 
-    <footer class="site-footer">
-      <div class="wrap">
-        <div>
-          <a class="brand" href="{% url 'index' %}#top" aria-label="Shared Counselling — home">
-            <span class="brand-name">Shared<em>Counselling</em></span>
-          </a>
-          <p>A Common Ground</p>
-        </div>
-        <nav aria-label="Footer">
-          <ul>
-            <li><a href="{% url 'index' %}#services">Services</a></li>
-            <li><a href="{% url 'index' %}#approach">Approach</a></li>
-            <li><a href="{% url 'counsellors' %}">Our counsellors</a></li>
-            <li><a href="{% url 'book' %}">Book a session</a></li>
-          </ul>
-        </nav>
-        <address>
-          <a href="mailto:sharedcounsellingteam@gmail.com">sharedcounsellingteam@gmail.com</a><br />
-        
-          <a
-            href="https://wa.me/917904221476?text=Hello%2C%20I%20would%20like%20to%20know%20more%20about%20counselling%20sessions."
-            target="_blank"
-          >
-            +91 79042 21476
-          </a><br />
-        </address>
-        <small>© 2026 Shared Counselling.</small>
-      </div>
-    </footer>
+  <script src="{% static 'js/index.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
 
-    <script src="{% static 'js/index.js' %}"></script>
-    {% block extra_js %}{% endblock %}
-  </body>
 </html>

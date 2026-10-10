@@ -1,3 +1,42 @@
+const menuToggle = document.querySelector(".menu-toggle");
+const siteHeader = document.querySelector(".site-header");
+const siteNav = document.querySelector(".site-nav");
+
+if (menuToggle && siteHeader && siteNav) {
+  const closeMenu = () => {
+    siteNav.classList.remove("is-open");
+    menuToggle.setAttribute("aria-expanded", "false");
+    menuToggle.setAttribute("aria-label", "Open navigation menu");
+  };
+
+  const openMenu = () => {
+    siteNav.classList.add("is-open");
+    menuToggle.setAttribute("aria-expanded", "true");
+    menuToggle.setAttribute("aria-label", "Close navigation menu");
+    siteNav.querySelector("a")?.focus();
+  };
+
+  menuToggle.addEventListener("click", () => {
+    if (siteNav.classList.contains("is-open")) closeMenu();
+    else openMenu();
+  });
+
+  siteNav.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", closeMenu);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!siteHeader.contains(event.target)) closeMenu();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && siteNav.classList.contains("is-open")) {
+      closeMenu();
+      menuToggle.focus();
+    }
+  });
+}
+
 // Scroll reveal
 const prefersReduced = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
