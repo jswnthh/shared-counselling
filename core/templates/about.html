@@ -8,109 +8,47 @@
 <section id="about" class="about" aria-labelledby="about-heading">
   <div class="wrap">
 
-    <div class="about-intro">
-      <header class="section-head reveal">
-        <p class="eyebrow">Why we do what we do</p>
-        <h1 id="about-heading">We believe understanding inspires change.</h1>
-      </header>
-    </div>
+    <header class="about-intro reveal">
+      <p class="eyebrow">Why we do what we do</p>
+      <h1 id="about-heading">We believe understanding inspires change.</h1>
+    </header>
 
-    <!-- Vision / Mission switcher -->
     <div class="statements reveal" data-statements>
-      <div class="switch" role="tablist" aria-label="Vision or mission" data-active="0">
-        <span class="switch-indicator" aria-hidden="true"></span>
-        <button class="switch-tab" role="tab" id="tab-vision" aria-controls="panel-vision" aria-selected="true">Our vision</button>
-        <button class="switch-tab" role="tab" id="tab-mission" aria-controls="panel-mission" aria-selected="false" tabindex="-1">Our mission</button>
-      </div>
+      <div class="statement-stage">
 
-      <div class="statement-stage" data-active="0">
-
-        <!-- VISION -->
-        <article class="statement-panel" role="tabpanel" id="panel-vision" aria-labelledby="tab-vision">
+        <article class="statement-panel">
+          <h2>Our vision</h2>
           <p class="statement-text">
             To create a community where mental well-being is
-            <mark data-key="valued">valued</mark>, emotional experiences are
-            <mark data-key="respected">respected</mark>, and every individual
-            feels <mark data-key="empowered">empowered</mark> to live a
+            <mark data-note="Mental well-being is treated as part of everyday health, not something to hide.">valued</mark>, emotional experiences are
+            <mark data-note="Every emotional experience is taken seriously, whatever it looks like.">respected</mark>, and every individual
+            feels <mark data-note="People leave with the confidence to shape a life that works for them.">empowered</mark> to live a
             meaningful, fulfilling, and self-sustaining life.
           </p>
-          <div class="chips" role="group" aria-label="Key ideas in our vision">
-            <button class="chip" data-key="valued" aria-pressed="false"
-              data-note="Mental well-being is treated as part of everyday health, not something to hide.">Valued</button>
-            <button class="chip" data-key="respected" aria-pressed="false"
-              data-note="Every emotional experience is taken seriously, whatever it looks like.">Respected</button>
-            <button class="chip" data-key="empowered" aria-pressed="false"
-              data-note="People leave with the confidence to shape a life that works for them.">Empowered</button>
-          </div>
-          <p class="note" aria-live="polite" data-default="Select a word to see what it means in practice.">Select a word to see what it means in practice.</p>
+          <p class="note"></p>
+          <span class="keyword-progress" aria-hidden="true"><span class="keyword-progress-fill"></span></span>
         </article>
 
-        <!-- MISSION -->
-        <article class="statement-panel" role="tabpanel" id="panel-mission" aria-labelledby="tab-mission" hidden>
+        <article class="statement-panel">
+          <h2>Our mission</h2>
           <p class="statement-text">
-            To provide <mark data-key="accessible">accessible</mark>,
-            <mark data-key="ethical">ethical</mark>, and
-            <mark data-key="evidence">evidence-informed</mark> counselling
+            To provide <mark data-note="Support that is easy to reach and easy to begin.">accessible</mark>,
+            <mark data-note="Care guided by clear professional ethics, with your trust at the centre.">ethical</mark>, and
+            <mark data-note="Methods are chosen because research supports them.">evidence-informed</mark> counselling
             that offers individuals a
-            <mark data-key="safe">safe and non-judgmental space</mark> to
+            <mark data-note="A place to speak openly without fear of being judged.">safe and non-judgmental space</mark> to
             explore their emotions, understand themselves, navigate life's
             challenges, and build the skills needed to move towards
             meaningful change and personal growth.
           </p>
-          <div class="chips" role="group" aria-label="Key ideas in our mission">
-            <button class="chip" data-key="accessible" aria-pressed="false"
-              data-note="Support that is easy to reach and easy to begin.">Accessible</button>
-            <button class="chip" data-key="ethical" aria-pressed="false"
-              data-note="Care guided by clear professional ethics, with your trust at the centre.">Ethical</button>
-            <button class="chip" data-key="evidence" aria-pressed="false"
-              data-note="Methods are chosen because research supports them.">Evidence-informed</button>
-            <button class="chip" data-key="safe" aria-pressed="false"
-              data-note="A place to speak openly without fear of being judged.">Safe space</button>
-          </div>
-          <p class="note" aria-live="polite" data-default="Select a word to see what it means in practice.">Select a word to see what it means in practice.</p>
+          <p class="note"></p>
+          <span class="keyword-progress" aria-hidden="true"><span class="keyword-progress-fill"></span></span>
         </article>
 
       </div>
+
     </div>
-  </div>
-</section>
 
-<!-- The mission names four things in order, so numbering is meaningful here -->
-<section class="journey" aria-labelledby="journey-heading">
-  <div class="wrap journey-grid">
-    <header class="section-head reveal">
-      <p class="eyebrow">What this looks like</p>
-      <h2 id="journey-heading">Four steps toward meaningful change.</h2>
-      <p class="journey-lead">Open each step to see how counselling supports it.</p>
-    </header>
-
-    <div class="steps reveal">
-      <details class="step" name="journey" open>
-        <summary><span class="step-num">1</span><span class="step-title">Explore your emotions</span><span class="step-icon" aria-hidden="true"></span></summary>
-        <p class="step-body">Start by saying what you feel, at your own pace, without needing the right words.</p>
-      </details>
-      <details class="step" name="journey">
-        <summary><span class="step-num">2</span><span class="step-title">Understand yourself</span><span class="step-icon" aria-hidden="true"></span></summary>
-        <p class="step-body">Notice patterns in your thoughts, reactions and relationships, and where they come from.</p>
-      </details>
-      <details class="step" name="journey">
-        <summary><span class="step-num">3</span><span class="step-title">Navigate life's challenges</span><span class="step-icon" aria-hidden="true"></span></summary>
-        <p class="step-body">Work through the situations in front of you with steady, practical support.</p>
-      </details>
-      <details class="step" name="journey">
-        <summary><span class="step-num">4</span><span class="step-title">Build skills for change</span><span class="step-icon" aria-hidden="true"></span></summary>
-        <p class="step-body">Leave with tools you can keep using, so progress continues beyond the session.</p>
-      </details>
-    </div>
-  </div>
-</section>
-
-<section class="closing" aria-labelledby="closing-heading">
-  <div class="wrap">
-    <p class="eyebrow">Ready when you are</p>
-    <h2 id="closing-heading">Understanding starts with a conversation.</h2>
-    <p>Meet the people who will walk through it with you.</p>
-    <a class="btn btn-light" href="/counsellors/">Meet our counsellors</a>
   </div>
 </section>
 
