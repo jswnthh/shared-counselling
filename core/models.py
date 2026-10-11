@@ -53,6 +53,11 @@ class Counsellor(models.Model):
         ),
     )
     location = models.CharField(max_length=120)
+    whatsapp_number = PhoneNumberField(
+        default="+917904221476",
+        region="IN",
+        help_text="WhatsApp enquiry number, including country code (for example +919876543210).",
+    )
     # Whether this counsellor is currently practising/accepting new clients —
     # shown as a green/red status dot on the homepage. Defaults to True so
     # every seeded profile starts "active"; flip it per-counsellor in admin.

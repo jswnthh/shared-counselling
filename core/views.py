@@ -18,11 +18,6 @@ from .scheduling import BOOKING_WINDOW_DAYS, SESSION_FEE_DISPLAY, SESSION_LENGTH
 
 logger = logging.getLogger(__name__)
 
-# Digits only for https://wa.me/<number> (shared practice line until
-# counsellor-specific chat numbers exist).
-PRACTICE_CHAT_NUMBER = "917904221476"
-
-
 def _bio_paragraphs(bio):
     """Split a packed bio into a few short paragraphs for the profile overlay."""
     text = (bio or "").strip()
@@ -59,7 +54,6 @@ def _resolved_counsellor(counsellor, topic_labels):
         ],
         "bio_paragraphs": _bio_paragraphs(counsellor.get("bio", "")),
         "short_name": _short_display_name(counsellor.get("name", "")),
-        "chat_number": counsellor.get("chat_number") or PRACTICE_CHAT_NUMBER,
         "whatsapp_enquire_text": (
             "Hello, I would like to enquire about a counselling session with "
             f"{_short_display_name(counsellor.get('name', ''))}."

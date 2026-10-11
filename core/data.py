@@ -118,6 +118,9 @@ def _to_dict(counsellor):
         "modes": counsellor.modes,
         "languages": counsellor.languages,
         "location": counsellor.location,
+        # wa.me accepts country code and digits only; this is sourced from the
+        # counsellor record rather than a template or view-level fallback.
+        "whatsapp_number": counsellor.whatsapp_number.as_e164.lstrip("+"),
         "intro": counsellor.intro,
         "bio": counsellor.bio,
         "modalities": counsellor.modalities,

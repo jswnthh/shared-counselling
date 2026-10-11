@@ -69,6 +69,7 @@ class CounsellorAdmin(admin.ModelAdmin):
                     "slug",
                     "credentials",
                     "location",
+                    "whatsapp_number",
                     "is_active",
                     "user",
                 )

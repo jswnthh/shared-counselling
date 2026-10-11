@@ -152,6 +152,17 @@ class BookingViewTests(TestCase):
         self.assertEqual(response.url, reverse("counsellors"))
 
 
+class CounsellorWhatsAppTests(TestCase):
+    def test_directory_uses_the_counsellors_database_whatsapp_number(self):
+        counsellor = Counsellor.objects.get(slug=get_counsellors()[0]["slug"])
+        counsellor.whatsapp_number = "+919876543210"
+        counsellor.save(update_fields=["whatsapp_number"])
+
+        response = self.client.get(reverse("counsellors"))
+
+        self.assertContains(response, "https://wa.me/919876543210")
+
+
 class BookConfirmedTests(TestCase):
     def test_missing_counsellor_shows_fallback_name(self):
         booking = Booking.objects.create(

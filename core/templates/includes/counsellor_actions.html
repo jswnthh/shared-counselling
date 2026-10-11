@@ -4,10 +4,9 @@
   {% else %}
   <span class="btn btn-outline is-disabled" aria-disabled="true">Not accepting bookings</span>
   {% endif %}
-  {% comment %}Shared practice WhatsApp for now; a counsellor-specific chat_number can override later. Country code, no + or spaces.{% endcomment %}
   <a
     class="btn btn-outline btn-whatsapp"
-    href="https://wa.me/{{ c.chat_number|default:'917904221476' }}?text=Hello%2C%20I%20would%20like%20to%20chat%20with%20{{ c.name|urlencode }}%20about%20counselling."
+    href="https://wa.me/{{ c.whatsapp_number }}?text=Hello%2C%20I%20would%20like%20to%20chat%20with%20{{ c.name|urlencode }}%20about%20counselling."
     target="_blank"
     rel="noopener noreferrer"
     aria-label="Chat with {{ c.name }} on WhatsApp (opens in a new tab)"
