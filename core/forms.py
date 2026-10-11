@@ -1,8 +1,8 @@
 from datetime import datetime
-import re
 
 from django import forms
 from django.utils import timezone
+from phonenumber_field.formfields import PhoneNumberField
 
 from .data import get_counsellor_by_slug, get_counsellors
 from .models import Booking
@@ -16,20 +16,26 @@ class BookingForm(forms.Form):
     mode = forms.ChoiceField(choices=Booking.Mode.choices)
     client_name = forms.CharField(max_length=120)
     client_email = forms.EmailField()
-    client_phone = forms.CharField(max_length=20)
+    client_phone = PhoneNumberField(
+        region="IN",
+        widget=forms.TelInput(
+            attrs={
+                "class": "field-input",
+                "id": "clientPhone",
+                "autocomplete": "tel",
+                "inputmode": "tel",
+                "aria-describedby": "clientPhoneHelp",
+                "required": True,
+            }
+        ),
+        error_messages={"invalid": "Enter a valid phone number, including its country code if outside India."},
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["counsellor_slug"].choices = [
             (c["slug"], c["name"]) for c in get_counsellors(bookable_only=True)
         ]
-
-    def clean_client_phone(self):
-        phone = (self.cleaned_data.get("client_phone") or "").strip()
-        digits = re.sub(r"\D", "", phone)
-        if len(digits) < 10:
-            raise forms.ValidationError("Enter a valid mobile number.")
-        return phone
 
     def clean(self):
         cleaned = super().clean()

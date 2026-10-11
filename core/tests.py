@@ -86,7 +86,7 @@ class BookingViewTests(TestCase):
         self.assertEqual(Booking.objects.count(), 1)
         booking = Booking.objects.get()
         self.assertEqual(booking.counsellor_slug, self.counsellor["slug"])
-        self.assertEqual(booking.client_phone, "9876543210")
+        self.assertEqual(booking.client_phone.as_e164, "+919876543210")
         self.assertEqual(response.url, reverse("book_confirmed", args=[booking.pk]))
 
     def test_post_sends_confirmation_email(self):
@@ -102,6 +102,23 @@ class BookingViewTests(TestCase):
         self.assertIn("sharedcounselling@gmail.com", client.cc)
         self.assertIn("New booking", practice.subject)
         self.assertIn("sharedcounsellingteam@gmail.com", practice.to)
+
+    def test_post_accepts_an_international_phone_number(self):
+        data = self._post_data()
+        data["client_phone"] = "+1 202-555-0123"
+        response = self.client.post(reverse("book"), data)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Booking.objects.get().client_phone.as_e164, "+12025550123")
+
+    def test_post_rejects_an_invalid_phone_number(self):
+        data = self._post_data()
+        data["client_phone"] = "12345"
+        response = self.client.post(reverse("book"), data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Booking.objects.count(), 0)
+        self.assertContains(response, "Enter a valid phone number")
 
     def test_post_redirects_even_if_email_raises(self):
         from unittest.mock import patch

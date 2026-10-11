@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
+    'phonenumber_field',
     'core',
 ]
 
@@ -196,6 +197,11 @@ TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 
 USE_TZ = True
+
+# Local numbers submitted without a country code are interpreted as Indian.
+# The E.164 database format makes every newly saved valid number unambiguous.
+PHONENUMBER_DEFAULT_REGION = "IN"
+PHONENUMBER_DB_FORMAT = "E164"
 
 
 # Static files (CSS, JavaScript, Images)

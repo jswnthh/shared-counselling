@@ -3,7 +3,10 @@
 
 {% block title %}Book a session — Shared Counselling{% endblock %}
 {% block meta_description %}Book a session with {{ selected_counsellor.name }} — pick a mode, date and time that works for you.{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/booking.css' %}" />{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/booking.css' %}" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />
+{% endblock %}
 
 {% block content %}
       <div class="booking-shell">
@@ -105,7 +108,8 @@
                     </div>
                     <div class="field">
                       <label class="field-label" for="clientPhone">Mobile number</label>
-                      <input class="field-input" type="tel" id="clientPhone" name="client_phone" value="{{ form.client_phone.value|default:'' }}" autocomplete="tel" inputmode="tel" required />
+                      {{ form.client_phone }}
+                      <p class="field-help" id="clientPhoneHelp">Choose your country, then enter your number.</p>
                       {% for error in form.client_phone.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
                     </div>
                   </div>
@@ -127,5 +131,7 @@
 
 {% block extra_js %}
 {{ counsellors_json|json_script:"counsellors-data" }}
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/intlTelInput.min.js"></script>
+<script src="{% static 'js/phone-input.js' %}"></script>
 <script src="{% static 'js/booking.js' %}"></script>
 {% endblock %}

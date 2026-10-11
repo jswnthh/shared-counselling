@@ -452,6 +452,23 @@ body:has(.booking-shell) .site-footer {
   border-color: var(--slate);
 }
 
+/* intl-tel-input supplies the accessible country picker; retain the booking
+   form's existing input dimensions and focus treatment. */
+.iti {
+  display: block;
+  width: 100%;
+}
+
+.iti .field-input {
+  width: 100%;
+}
+
+.field-help {
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  margin: 0;
+}
+
 .field-error {
   color: #b3261e;
   font-size: 0.78rem;

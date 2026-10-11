@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class ServiceCategory(models.Model):
@@ -144,7 +145,9 @@ class Booking(models.Model):
     counsellor_slug = models.CharField(max_length=64, db_index=True)
     client_name = models.CharField(max_length=120)
     client_email = models.EmailField()
-    client_phone = models.CharField(max_length=20, blank=True, default="")
+    # Blank is retained for bookings created before phone collection was
+    # required. Valid values are persisted in E.164 via project settings.
+    client_phone = PhoneNumberField(blank=True, default="")
     mode = models.CharField(max_length=16, choices=Mode.choices)
     start_at = models.DateTimeField(db_index=True)
     end_at = models.DateTimeField()
