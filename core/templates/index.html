@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'basketball/game.css' %}" />
+<link rel="stylesheet" href="{% static 'css/game.css' %}" />
 {% endblock %}
 
 {% block content %}
@@ -86,10 +86,10 @@
   </div>
 </section>
 
-<!-- A small reset between sections: play is optional and never affects access to care. -->
+<!-- Basketball coupon game -->
 <section class="shooting-game reveal" aria-label="Basketball coupon game">
   <div class="wrap">
-    <div id="basketball-game-root"></div>
+    {% include "game.html" %}
   </div>
 </section>
 
@@ -228,5 +228,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'basketball/game.js' %}"></script>
+<script type="module" src="{% static 'js/game.js' %}"></script>
 {% endblock %}
