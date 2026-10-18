@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'basketball/game.css' %}" />
+{% endblock %}
+
 {% block content %}
 <!-- Hero -->
 <section class="hero" aria-labelledby="hero-heading">
@@ -79,6 +83,13 @@
         </p>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- A small reset between sections: play is optional and never affects access to care. -->
+<section class="shooting-game reveal" aria-label="Basketball coupon game">
+  <div class="wrap">
+    <div id="basketball-game-root"></div>
   </div>
 </section>
 
@@ -186,7 +197,7 @@
     </a>
   </div> -->
 
-  <!-- <div id="book" class="cta-marquee" aria-labelledby="cta-heading">
+<!-- <div id="book" class="cta-marquee" aria-labelledby="cta-heading">
     <h2 id="cta-heading" class="line" aria-label="The hardest part is reaching out. Start there.">
       <div class="track" aria-hidden="true">
         <span>The hardest part is reaching out. Start there.</span>
@@ -214,4 +225,8 @@
     <a class="btn btn-dark" href="#">Get in touch</a>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'basketball/game.js' %}"></script>
 {% endblock %}
