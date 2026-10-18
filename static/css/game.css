@@ -215,17 +215,21 @@
 /* Coupon (shown only if you uncomment it in the HTML) */
 .basketball-game-coupon {
   position: absolute;
-  z-index: 2;
+  z-index: 6;
   bottom: 12%;
   left: calc(50% - clamp(10rem, 22vw, 14rem));
   display: grid;
-  width: clamp(4.8rem, 10vw, 6.5rem);
-  min-height: clamp(4rem, 8vw, 5.5rem);
+  width: clamp(9.75rem, 20vw, 12.5rem);
+  min-height: clamp(6.9rem, 13vw, 8.3rem);
   align-content: start;
-  gap: .42rem;
-  padding: .7rem;
-  border-radius: 7px;
+  gap: .5rem;
+  padding: .95rem;
+  border: 1px solid #dce2e7;
+  border-radius: 10px;
   background: #fff;
+  color: var(--game-ink);
+  font: inherit;
+  text-align: left;
   box-shadow: 0 12px 17px rgb(54 67 78 / .15);
   transform: rotate(-13deg);
   opacity: 0;
@@ -242,13 +246,26 @@
   transform: translateY(0) rotate(-13deg) scale(1);
 }
 
+.basketball-game-coupon:hover {
+  box-shadow: 0 16px 24px rgb(54 67 78 / .2);
+}
+
+.basketball-game-coupon:active {
+  transform: translateY(1px) rotate(-13deg) scale(.98);
+}
+
+.basketball-game-coupon:focus-visible {
+  outline: 3px solid var(--game-orange);
+  outline-offset: 3px;
+}
+
 .basketball-game-coupon span {
   justify-self: start;
   padding: .19rem .3rem;
   border-radius: 3px;
   background: #ff3864;
   color: #fff;
-  font-size: .45rem;
+  font-size: .58rem;
   font-weight: 700;
   letter-spacing: .05em;
 }
@@ -265,13 +282,23 @@
 }
 
 .basketball-game-coupon b {
-  font-size: clamp(.55rem, 1.2vw, .7rem);
+  font-size: clamp(.8rem, 1.6vw, 1rem);
   line-height: 1.1;
+}
+
+.basketball-game-coupon strong {
+  padding: .42rem .5rem;
+  border: 1px dashed #a7b0b8;
+  border-radius: 5px;
+  background: #f6f8fa;
+  font-size: clamp(.66rem, 1.4vw, .82rem);
+  letter-spacing: .08em;
+  line-height: 1;
 }
 
 .basketball-game-coupon small {
   color: var(--game-muted);
-  font-size: clamp(.44rem, .9vw, .55rem);
+  font-size: clamp(.55rem, 1vw, .65rem);
   line-height: 1.15;
 }
 
@@ -294,7 +321,8 @@
 .basketball-game-ball {
   position: absolute;
   z-index: 5;
-  bottom: 2.6rem;
+  /* Leave enough runway below the resting ball for a full desktop pull-back. */
+  bottom: clamp(6.5rem, 13vw, 9rem);
   left: 80%;
   width: clamp(4.8rem, 12vw, 7rem);
   aspect-ratio: 1;

@@ -1,10 +1,13 @@
 {% load static %}
 <div class="basketball-game-heading">
   <div>
-    <p class="basketball-game-eyebrow">A five-shot reset</p>
-    <h2 id="basketball-game-heading">Pull back and<br />take your shot.</h2>
-    <p class="basketball-game-intro">Five baskets in five tries unlocks a little thank-you.</p> <br><br>
+    <p class="basketball-game-eyebrow">A three-shot streak</p>
+    <h2 id="basketball-game-heading">Make it three times<br />in a row.</h2>
+    <p class="basketball-game-intro">Land three consecutive baskets to unlock a little thank-you.</p>
+    <br>
   </div>
+
+
 
 </div>
 <!-- Static game composition. Add behavior in static/js/game.js only after the visual layout is approved. -->
@@ -12,7 +15,7 @@
   <div class="basketball-game-court" data-basketball-game role="application" aria-label="Basketball game. Drag the ball away from the hoop and release to shoot.">
     <div class="basketball-game-surface">
       <div class="basketball-game-score" aria-label="Game score preview">
-        <span>Baskets <strong data-game-score>0/5</strong></span><i aria-hidden="true"></i><span>Shots <strong data-game-shots>5</strong></span>
+        <span>Streak <strong data-game-streak>0/3</strong></span>
       </div>
       <span class="basketball-game-target" aria-hidden="true"></span>
     </div>
@@ -24,12 +27,13 @@
       <img class="basketball-game-rim-front" src="{% static 'images/game-assets/hoop-rim-front.svg' %}" alt="" />
     </div>
 
-    <div class="basketball-game-coupon" data-game-coupon role="status" aria-live="polite" hidden>
+    <button class="basketball-game-coupon" data-game-coupon data-coupon-code="THANKYOU10" type="button" aria-label="Copy coupon code THANKYOU10" hidden>
       <span>10% OFF</span>
       <b>Three in a row!</b>
-      <small>Your thank-you is unlocked.</small>
+      <strong data-coupon-code-label>THANKYOU10</strong>
+      <small data-coupon-note>Screenshot or tap to copy.</small>
       <i></i><i></i><i></i>
-    </div>
+    </button>
     <span class="basketball-game-aim" data-game-aim aria-hidden="true"></span>
     <button class="basketball-game-ball" data-game-ball type="button" aria-label="Drag the basketball backwards and release to shoot">
       <i></i>
@@ -38,6 +42,5 @@
       <i></i>
     </button>
     <p class="basketball-game-status" data-game-status aria-live="polite">Pull the ball back, then release.</p>
-    <button class="basketball-game-replay" data-game-replay type="button" hidden>Play again</button>
   </div>
 </section>

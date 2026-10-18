@@ -3,10 +3,10 @@ const ball = court?.querySelector("[data-game-ball]");
 const hoop = court?.querySelector("[data-game-hoop]");
 const aimLayer = court?.querySelector("[data-game-aim]");
 const statusEl = court?.querySelector("[data-game-status]");
-const scoreEl = court?.querySelector("[data-game-score]");
-const shotsEl = court?.querySelector("[data-game-shots]");
-const replayButton = court?.querySelector("[data-game-replay]");
+const streakEl = court?.querySelector("[data-game-streak]");
 const coupon = court?.querySelector("[data-game-coupon]");
+const couponCodeLabel = coupon?.querySelector("[data-coupon-code-label]");
+const couponNote = coupon?.querySelector("[data-coupon-note]");
 
 if (court && ball && hoop && aimLayer) {
   const DOT_COUNT = 10;
@@ -14,7 +14,7 @@ if (court && ball && hoop && aimLayer) {
   const AIM_RADII = [6, 5.8, 5.6, 5.4, 5.2, 5, 4.8, 4.6, 4.4, 4.2];
   const DOT_BOX = 46;
   const REST_POWER = 0.42;
-  const MAX_SHOTS = 5;
+  const STREAK_GOAL = 3;
 
   const dots = AIM_RADII.map((radius, index) => {
     const img = document.createElement("img");
@@ -38,8 +38,6 @@ if (court && ball && hoop && aimLayer) {
   let flying = false;
   let pullDistance = 0;
   let activePointer = null;
-  let baskets = 0;
-  let shots = 0;
   let streak = 0;
   let couponShown = false;
 
@@ -170,8 +168,7 @@ if (court && ball && hoop && aimLayer) {
   }
 
   function updateScore() {
-    if (scoreEl) scoreEl.textContent = `${baskets}/${MAX_SHOTS}`;
-    if (shotsEl) shotsEl.textContent = `${Math.max(0, MAX_SHOTS - shots)}`;
+    if (streakEl) streakEl.textContent = `${Math.min(streak, STREAK_GOAL)}/${STREAK_GOAL}`;
   }
 
   function setBallDepth(depth) {
@@ -186,8 +183,24 @@ if (court && ball && hoop && aimLayer) {
     requestAnimationFrame(() => coupon.classList.add("is-visible"));
   }
 
+  async function copyCoupon() {
+    if (!coupon) return;
+    const code = coupon.dataset.couponCode;
+    if (!code) return;
+
+    try {
+      await navigator.clipboard.writeText(code);
+      if (couponCodeLabel) couponCodeLabel.textContent = "COPIED!";
+      if (couponNote) couponNote.textContent = "Coupon code copied to your clipboard.";
+      setStatus("Coupon code copied.");
+    } catch {
+      if (couponNote) couponNote.textContent = "Take a screenshot to save your coupon.";
+      setStatus("Copy is unavailable here — take a screenshot of the coupon.");
+    }
+  }
+
   function onPointerDown(event) {
-    if (flying || shots >= MAX_SHOTS || event.button > 0) return;
+    if (flying || event.button > 0) return;
     dragging = true;
     activePointer = event.pointerId;
     ball.classList.add("is-dragging");
@@ -278,11 +291,9 @@ if (court && ball && hoop && aimLayer) {
   function finishShot(made) {
     setBallDepth(null);
     aimLayer.hidden = false;
-    shots += 1;
     if (made) {
-      baskets += 1;
       streak += 1;
-      if (streak >= 3) revealCoupon();
+      if (streak >= STREAK_GOAL) revealCoupon();
     } else {
       streak = 0;
     }
@@ -294,17 +305,8 @@ if (court && ball && hoop && aimLayer) {
       renderAim();
     });
 
-    if (shots >= MAX_SHOTS) {
-      ball.disabled = true;
-      if (replayButton) {
-        replayButton.hidden = false;
-        replayButton.focus();
-      }
-      setStatus(baskets === MAX_SHOTS ? "Five for five — your thank-you is unlocked!" : `Round complete: ${baskets} basket${baskets === 1 ? "" : "s"} from five.`);
-    } else {
-      ball.disabled = false;
-      setStatus(couponShown && streak === 3 ? "Three in a row — your coupon is unlocked!" : made ? "Swish! Pull back for your next shot." : "Off the rim — pull back and try again.");
-    }
+    ball.disabled = false;
+    setStatus(couponShown && streak === STREAK_GOAL ? "Three in a row — your coupon is unlocked!" : made ? "Swish! Keep the streak going." : "Off the rim — the streak resets. Try again.");
     flying = false;
   }
 
@@ -346,9 +348,10 @@ if (court && ball && hoop && aimLayer) {
   ball.addEventListener("pointermove", onPointerMove);
   ball.addEventListener("pointerup", finishDrag);
   ball.addEventListener("pointercancel", finishDrag);
+  coupon?.addEventListener("click", copyCoupon);
 
   ball.addEventListener("keydown", (event) => {
-    if (flying || shots >= MAX_SHOTS) return;
+    if (flying) return;
     const step = event.shiftKey ? 0.2 : 0.1;
     if (event.key === "ArrowLeft") {
       aim.lateral = clamp(aim.lateral - step, -1, 1);
@@ -381,20 +384,6 @@ if (court && ball && hoop && aimLayer) {
 
   window.addEventListener("resize", layoutFromRest);
   hoop.querySelector(".basketball-game-rim-front")?.addEventListener("load", layoutFromRest);
-
-  replayButton?.addEventListener("click", () => {
-    baskets = 0;
-    shots = 0;
-    streak = 0;
-    couponShown = false;
-    updateScore();
-    coupon?.classList.remove("is-visible");
-    if (coupon) coupon.hidden = true;
-    replayButton.hidden = true;
-    ball.disabled = false;
-    setStatus("Pull the ball back, then release.");
-    layoutFromRest();
-  });
 
   measureRest();
   updateScore();
