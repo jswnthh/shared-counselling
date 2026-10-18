@@ -3,6 +3,10 @@ const ball = court?.querySelector("[data-game-ball]");
 const hoop = court?.querySelector("[data-game-hoop]");
 const aimLayer = court?.querySelector("[data-game-aim]");
 const statusEl = court?.querySelector("[data-game-status]");
+const scoreEl = court?.querySelector("[data-game-score]");
+const shotsEl = court?.querySelector("[data-game-shots]");
+const replayButton = court?.querySelector("[data-game-replay]");
+const coupon = court?.querySelector("[data-game-coupon]");
 
 if (court && ball && hoop && aimLayer) {
   const DOT_COUNT = 10;
@@ -10,6 +14,7 @@ if (court && ball && hoop && aimLayer) {
   const AIM_RADII = [6, 5.8, 5.6, 5.4, 5.2, 5, 4.8, 4.6, 4.4, 4.2];
   const DOT_BOX = 46;
   const REST_POWER = 0.42;
+  const MAX_SHOTS = 5;
 
   const dots = AIM_RADII.map((radius, index) => {
     const img = document.createElement("img");
@@ -33,6 +38,10 @@ if (court && ball && hoop && aimLayer) {
   let flying = false;
   let pullDistance = 0;
   let activePointer = null;
+  let baskets = 0;
+  let shots = 0;
+  let streak = 0;
+  let couponShown = false;
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
@@ -160,8 +169,25 @@ if (court && ball && hoop && aimLayer) {
     if (statusEl) statusEl.textContent = text;
   }
 
+  function updateScore() {
+    if (scoreEl) scoreEl.textContent = `${baskets}/${MAX_SHOTS}`;
+    if (shotsEl) shotsEl.textContent = `${Math.max(0, MAX_SHOTS - shots)}`;
+  }
+
+  function setBallDepth(depth) {
+    ball.classList.toggle("is-behind-rim", depth === "behind");
+    ball.classList.toggle("is-bouncing", depth === "bounce");
+  }
+
+  function revealCoupon() {
+    if (!coupon || couponShown) return;
+    couponShown = true;
+    coupon.hidden = false;
+    requestAnimationFrame(() => coupon.classList.add("is-visible"));
+  }
+
   function onPointerDown(event) {
-    if (flying || event.button > 0) return;
+    if (flying || shots >= MAX_SHOTS || event.button > 0) return;
     dragging = true;
     activePointer = event.pointerId;
     ball.classList.add("is-dragging");
@@ -208,6 +234,7 @@ if (court && ball && hoop && aimLayer) {
     if (!curve) return;
     flying = true;
     ball.disabled = true;
+    aimLayer.hidden = true;
     const duration = reducedMotion ? 0 : 720;
     const started = performance.now();
 
@@ -219,18 +246,100 @@ if (court && ball && hoop && aimLayer) {
         requestAnimationFrame(frame);
         return;
       }
-      flying = false;
-      ball.disabled = false;
-      aim = { lateral: 0, power: REST_POWER };
-      releaseBallStyles();
-      requestAnimationFrame(() => {
-        measureRest();
-        renderAim();
-        setStatus("Pull the ball back, then release.");
-      });
+      resolveShot(curve);
     }
 
     requestAnimationFrame(frame);
+  }
+
+  function isBasket(curve) {
+    const rim = measureRim();
+    const horizontalError = Math.abs(curve.end.x - rim.x) / rim.half;
+    // The ball must arrive over the centre of the rim with enough, but not too
+    // much, loft. Everything else visibly catches the rim and rebounds.
+    return horizontalError < 0.58 && aim.power >= 0.24 && aim.power <= 0.9;
+  }
+
+  function animateCurve(curve, duration, onComplete, depthAt) {
+    const started = performance.now();
+    function frame(now) {
+      const t = duration === 0 ? 1 : clamp((now - started) / duration, 0, 1);
+      if (depthAt && t >= depthAt.t) setBallDepth(depthAt.depth);
+      placeBall(pointOnCurve(curve, t));
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        onComplete();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function finishShot(made) {
+    setBallDepth(null);
+    aimLayer.hidden = false;
+    shots += 1;
+    if (made) {
+      baskets += 1;
+      streak += 1;
+      if (streak >= 3) revealCoupon();
+    } else {
+      streak = 0;
+    }
+    updateScore();
+    aim = { lateral: 0, power: REST_POWER };
+    releaseBallStyles();
+    requestAnimationFrame(() => {
+      measureRest();
+      renderAim();
+    });
+
+    if (shots >= MAX_SHOTS) {
+      ball.disabled = true;
+      if (replayButton) {
+        replayButton.hidden = false;
+        replayButton.focus();
+      }
+      setStatus(baskets === MAX_SHOTS ? "Five for five — your thank-you is unlocked!" : `Round complete: ${baskets} basket${baskets === 1 ? "" : "s"} from five.`);
+    } else {
+      ball.disabled = false;
+      setStatus(couponShown && streak === 3 ? "Three in a row — your coupon is unlocked!" : made ? "Swish! Pull back for your next shot." : "Off the rim — pull back and try again.");
+    }
+    flying = false;
+  }
+
+  function resolveShot(curve) {
+    const made = isBasket(curve);
+    const rim = measureRim();
+
+    if (made) {
+      hoop.classList.remove("is-rim-hit");
+      hoop.classList.add("is-scored");
+      const drop = {
+        start: curve.end,
+        control: { x: rim.x + (curve.end.x - rim.x) * 0.3, y: rim.y + 42 },
+        end: { x: rim.x, y: rim.y + 122 },
+      };
+      animateCurve(drop, reducedMotion ? 0 : 360, () => {
+        hoop.classList.remove("is-scored");
+        finishShot(true);
+      }, { t: 0.12, depth: "behind" });
+      return;
+    }
+
+    hoop.classList.remove("is-scored");
+    hoop.classList.add("is-rim-hit");
+    const side = curve.end.x < rim.x ? -1 : 1;
+    const rebound = {
+      start: curve.end,
+      control: { x: curve.end.x + side * 70, y: rim.y - 52 },
+      end: { x: curve.end.x + side * 130, y: rim.y + 118 },
+    };
+    setBallDepth("bounce");
+    animateCurve(rebound, reducedMotion ? 0 : 430, () => {
+      hoop.classList.remove("is-rim-hit");
+      finishShot(false);
+    });
   }
 
   ball.addEventListener("pointerdown", onPointerDown);
@@ -239,7 +348,7 @@ if (court && ball && hoop && aimLayer) {
   ball.addEventListener("pointercancel", finishDrag);
 
   ball.addEventListener("keydown", (event) => {
-    if (flying) return;
+    if (flying || shots >= MAX_SHOTS) return;
     const step = event.shiftKey ? 0.2 : 0.1;
     if (event.key === "ArrowLeft") {
       aim.lateral = clamp(aim.lateral - step, -1, 1);
@@ -273,6 +382,21 @@ if (court && ball && hoop && aimLayer) {
   window.addEventListener("resize", layoutFromRest);
   hoop.querySelector(".basketball-game-rim-front")?.addEventListener("load", layoutFromRest);
 
+  replayButton?.addEventListener("click", () => {
+    baskets = 0;
+    shots = 0;
+    streak = 0;
+    couponShown = false;
+    updateScore();
+    coupon?.classList.remove("is-visible");
+    if (coupon) coupon.hidden = true;
+    replayButton.hidden = true;
+    ball.disabled = false;
+    setStatus("Pull the ball back, then release.");
+    layoutFromRest();
+  });
+
   measureRest();
+  updateScore();
   renderAim();
 }

@@ -164,12 +164,41 @@
   position: absolute;
   top: 27%;
   z-index: 2;
+  transform-origin: 50% 0;
 }
 
 .basketball-game-rim-front {
   position: absolute;
   top: 15%;
   z-index: 4;
+}
+
+.basketball-game-ball.is-behind-rim {
+  z-index: 2;
+}
+
+.basketball-game-ball.is-bouncing {
+  transform: none;
+}
+
+.basketball-game-hoop.is-scored .basketball-game-net {
+  animation: basketball-net-swish .36s ease-out;
+}
+
+.basketball-game-hoop.is-rim-hit .basketball-game-rim-front {
+  animation: basketball-rim-rattle .24s ease-in-out 2;
+}
+
+@keyframes basketball-net-swish {
+  0% { transform: translateX(-50%) scaleY(1); }
+  45% { transform: translateX(-50%) scaleX(.9) scaleY(1.18); }
+  100% { transform: translateX(-50%) scaleY(1); }
+}
+
+@keyframes basketball-rim-rattle {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  35% { transform: translateX(-50%) rotate(-3deg); }
+  70% { transform: translateX(-50%) rotate(3deg); }
 }
 
 .basketball-game-backboard {
@@ -199,6 +228,18 @@
   background: #fff;
   box-shadow: 0 12px 17px rgb(54 67 78 / .15);
   transform: rotate(-13deg);
+  opacity: 0;
+  transform: translateY(1rem) rotate(-13deg) scale(.94);
+  transition: opacity .28s ease-out, transform .32s cubic-bezier(.22, 1, .36, 1);
+}
+
+.basketball-game-coupon[hidden] {
+  display: none;
+}
+
+.basketball-game-coupon.is-visible {
+  opacity: 1;
+  transform: translateY(0) rotate(-13deg) scale(1);
 }
 
 .basketball-game-coupon span {
@@ -216,6 +257,22 @@
   display: block;
   width: 60%;
   border-top: 1px solid #dce2e7;
+}
+
+.basketball-game-coupon b,
+.basketball-game-coupon small {
+  display: block;
+}
+
+.basketball-game-coupon b {
+  font-size: clamp(.55rem, 1.2vw, .7rem);
+  line-height: 1.1;
+}
+
+.basketball-game-coupon small {
+  color: var(--game-muted);
+  font-size: clamp(.44rem, .9vw, .55rem);
+  line-height: 1.15;
 }
 
 /* Aim dots: ten assets spaced along the shot arc by game.js */
@@ -311,6 +368,43 @@
   color: var(--game-muted);
   font-size: .82rem;
   text-align: center;
+}
+
+.basketball-game-replay {
+  position: absolute;
+  right: 50%;
+  bottom: 2.35rem;
+  z-index: 6;
+  padding: .6rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--game-ink);
+  color: #fff;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transform: translateX(50%);
+}
+
+.basketball-game-replay:hover {
+  background: #30363d;
+}
+
+.basketball-game-replay:active {
+  transform: translateX(50%) translateY(1px) scale(.98);
+}
+
+.basketball-game-replay:focus-visible {
+  outline: 3px solid var(--game-orange);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .basketball-game-hoop.is-scored .basketball-game-net,
+  .basketball-game-hoop.is-rim-hit .basketball-game-rim-front {
+    animation: none;
+  }
 }
 
 /* Mobile */
