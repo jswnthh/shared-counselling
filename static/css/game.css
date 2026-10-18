@@ -218,12 +218,27 @@
   border-top: 1px solid #dce2e7;
 }
 
+/* Aim dots: ten assets spaced along the shot arc by game.js */
+.basketball-game-aim {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.basketball-game-aim-dot {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
 /* Ball */
 .basketball-game-ball {
   position: absolute;
   z-index: 5;
   bottom: 2.6rem;
-  left: 50%;
+  left: 80%;
   width: clamp(4.8rem, 12vw, 7rem);
   aspect-ratio: 1;
   transform: translateX(-50%);
@@ -231,6 +246,12 @@
   border-radius: 50%;
   background: var(--game-orange);
   box-shadow: inset -8px -9px 0 rgb(121 45 18 / .13), 0 8px 13px rgb(56 65 73 / .13);
+  touch-action: none;
+  cursor: grab;
+}
+
+.basketball-game-ball.is-dragging {
+  cursor: grabbing;
 }
 
 .basketball-game-ball i {
@@ -297,6 +318,7 @@
   .basketball-game {
     padding: 1.15rem;
     border-radius: 18px;
+    height: 70vh;
   }
 
   .basketball-game-heading {
@@ -309,23 +331,23 @@
   }
 
   .basketball-game-court {
-    min-height: 31rem;
+    min-height: 45rem;
   }
 
   .basketball-game-surface {
     right: 0;
     left: 0;
-    height: 18rem;
+    height: 15rem;
   }
 
   .basketball-game-hoop {
-    top: 5.5rem;
+    top: 30%;
     width: 9rem;
   }
 
   /* Keep the rim flush with the board's lower edge at the smaller size. */
   .basketball-game-backboard {
-    top: -25%;
+    top: -28%;
     height: 40%;
   }
 
@@ -339,7 +361,7 @@
   }
 
   .basketball-game-ball {
-    bottom: 2.4rem;
-    left: 68%;
+    bottom: 25%;
+    left: 80%;
   }
 }
