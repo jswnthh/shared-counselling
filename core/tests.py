@@ -148,6 +148,14 @@ class BookingViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["total_paise"], 520000)
 
+    def test_single_session_package_is_its_counsellors_base_rate(self):
+        response = self.client.post(
+            reverse("booking_pricing"),
+            {"counsellor": self.counsellor["slug"], "session_plan": f"package-{self.single_package.pk}", "coupon_code": ""},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["package_discount_paise"], 0)
+
     def test_post_sends_confirmation_email(self):
         from django.core import mail
 

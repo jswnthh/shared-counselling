@@ -47,7 +47,8 @@ def send_booking_emails(booking):
         f"  Client:     {booking.client_name}\n"
         f"  Email:      {booking.client_email}\n"
         f"  Mobile:     {booking.client_phone or '—'}\n"
-        f"  Plan:       {session_plan_label(booking.session_plan)}\n"
+        f"  Package:    {session_plan_label(booking.session_plan)}\n"
+        f"  Coupon:     {booking.coupon_code or 'None applied'}\n"
         f"  Total:      ₹{booking.total_paise / 100:,.0f}\n"
     )
     practice = _practice_inboxes()

@@ -10,7 +10,7 @@ from django.core.mail import get_connection
 from django.test import SimpleTestCase, TestCase, override_settings
 
 from .booking_email import send_booking_emails
-from .models import Booking
+from .models import Booking, Counsellor, CounsellorPackage
 
 
 class EmailConfigurationTests(SimpleTestCase):
@@ -72,3 +72,27 @@ class BookingEmailTests(TestCase):
             with self.assertLogs("core.booking_email", level="ERROR"):
                 send_booking_emails(self.booking)
         self.assertTrue(Booking.objects.filter(pk=self.booking.pk).exists())
+
+    def test_package_and_coupon_are_in_client_and_staff_emails(self):
+        counsellor = Counsellor.objects.create(slug="email-test", name="Test Counsellor")
+        package = CounsellorPackage.objects.create(
+            counsellor=counsellor, name="3-session package", sessions=3,
+            total_price_rupees=4050,
+        )
+        self.booking.session_plan = f"package-{package.pk}"
+        self.booking.coupon_code = "THANKYOU10"
+        self.booking.save()
+        self.booking.refresh_from_db()
+
+        send_booking_emails(self.booking)
+
+        self.assertEqual(len(mail.outbox), 2)
+        for message in mail.outbox:
+            self.assertIn("Package:    3-session package", message.body)
+            self.assertIn("Coupon:     THANKYOU10", message.body)
+
+    def test_emails_explicitly_show_when_no_coupon_was_applied(self):
+        send_booking_emails(self.booking)
+        self.assertEqual(len(mail.outbox), 2)
+        for message in mail.outbox:
+            self.assertIn("Coupon:     None applied", message.body)

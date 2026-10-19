@@ -22,15 +22,29 @@ def get_session_plans(counsellor):
             is_active=True,
         )
     )
+    # A counsellor's one-session package is their own baseline. It must never
+    # be presented as a discounted package merely because it differs from the
+    # legacy global fee.
+    single_session = next((package for package in custom_packages if package.sessions == 1), None)
+    base_session_paise = (
+        single_session.total_price_rupees * 100
+        if single_session
+        else None
+    )
     plans = []
     for package in custom_packages:
-        subtotal = SESSION_FEE_PAISE * package.sessions
         total_paise = package.total_price_rupees * 100
+        subtotal = (
+            base_session_paise * package.sessions
+            if base_session_paise is not None
+            else total_paise
+        )
         discount = max(subtotal - total_paise, 0)
         plans.append({
             "code": f"package-{package.pk}",
             "label": package.name,
             "sessions": package.sessions,
+            "subtotal_paise": subtotal,
             "total_paise": total_paise,
             "discount_percent": round(discount * 100 / subtotal) if subtotal else 0,
         })
@@ -47,7 +61,7 @@ def quote_booking(counsellor, plan_code, coupon_code=""):
     if plan is None:
         raise ValueError("Choose a valid session plan.")
 
-    subtotal = SESSION_FEE_PAISE * plan["sessions"]
+    subtotal = plan["subtotal_paise"]
     package_discount = max(subtotal - plan["total_paise"], 0)
     after_package = plan["total_paise"]
     normalized_code = (coupon_code or "").strip().upper()
