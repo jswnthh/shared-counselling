@@ -154,6 +154,11 @@ class Booking(models.Model):
     # required. Valid values are persisted in E.164 via project settings.
     client_phone = PhoneNumberField(blank=True, default="")
     mode = models.CharField(max_length=16, choices=Mode.choices)
+    session_plan = models.CharField(max_length=16, default="single")
+    coupon_code = models.CharField(max_length=40, blank=True, default="")
+    package_discount_paise = models.PositiveIntegerField(default=0)
+    coupon_discount_paise = models.PositiveIntegerField(default=0)
+    total_paise = models.PositiveIntegerField(default=150000)
     start_at = models.DateTimeField(db_index=True)
     end_at = models.DateTimeField()
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.CONFIRMED)

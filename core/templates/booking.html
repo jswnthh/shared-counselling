@@ -1,137 +1,125 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block title %}Book a session — Shared Counselling{% endblock %}
-{% block meta_description %}Book a session with {{ selected_counsellor.name }} — pick a mode, date and time that works for you.{% endblock %}
+{% block meta_description %}Book a session with {{ selected_counsellor.name }} — pick a mode, plan, date and time that
+works for you.{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/booking.css' %}" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />
-{% endblock %}
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />{%
+endblock %}
 {% block content %}
-      <div class="booking-shell">
-        <div class="wrap booking-shell-inner">
-          <h2 id="booking-form-heading" class="sr-only">Booking form</h2>
-
-          <form
-            class="booking-form"
-            method="post"
-            action="{% url 'book' %}?counsellor={{ selected_counsellor.slug }}"
-            id="bookingForm"
-            data-preselected="{{ selected_counsellor.slug }}"
-            data-window-days="{{ booking_window_days }}"
-            data-booking-horizon="{{ booking_horizon }}"
-            data-session-minutes="{{ session_length_minutes }}"
-          >
-            {% csrf_token %}
-
-            {% if form.non_field_errors or form.mode.errors or form.date.errors or form.time.errors or form.counsellor_slug.errors %}
-            <div class="form-errors" role="alert">
-              {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
-              {% for error in form.mode.errors %}<p>{{ error }}</p>{% endfor %}
-              {% for error in form.date.errors %}<p>{{ error }}</p>{% endfor %}
-              {% for error in form.time.errors %}<p>{{ error }}</p>{% endfor %}
-              {% for error in form.counsellor_slug.errors %}<p>{{ error }}</p>{% endfor %}
-            </div>
-            {% endif %}
-
-            <input type="hidden" name="counsellor_slug" id="counsellorSlugInput" value="{{ selected_counsellor.slug }}" />
-            <input type="hidden" name="date" id="dateInput" value="{{ form.date.value|default:'' }}" />
-            <input type="hidden" name="time" id="timeInput" value="{{ form.time.value|default:'' }}" />
-            <input type="hidden" name="mode" id="modeInput" value="{{ form.mode.value|default:'' }}" />
-
-            <div class="booking-col booking-col-main">
-              <header class="booking-intro" aria-labelledby="booking-heading">
-                <p class="eyebrow">Book a session</p>
-                <h1 id="booking-heading">Find a time that works.</h1>
-                <p class="lede">
-                  Choose how you'd like to meet, then pick a date and time from
-                  {{ selected_counsellor.short_name|default:selected_counsellor.name }}'s availability.
-                </p>
-              </header>
-
-              <div class="booking-with" aria-label="Booking with">
-                <p class="filter-label">Booking with</p>
-                <div class="selected-counsellor">
-                  <img
-                    src="{{ selected_counsellor.photo }}"
-                    width="48"
-                    height="48"
-                    alt=""
-                    decoding="async"
-                    aria-hidden="true"
-                  />
-                  <div class="selected-counsellor-text">
-                    <strong>{{ selected_counsellor.name }}</strong>
-                    <span>{{ selected_counsellor.credentials }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mode-block cal-panel">
-                <p class="filter-label" id="modeLabel">1. Appointment mode</p>
-                <div class="mode-filter" id="modeFilter" role="group" aria-labelledby="modeLabel"></div>
-              </div>
-
-              <div class="availability-block" id="availabilitySection">
-                <div class="cal-panel">
-                  <p class="filter-label">2. Choose a date</p>
-                  <div class="cal-nav">
-                    <button type="button" class="cal-nav-btn" id="calPrev" aria-label="Previous month">‹</button>
-                    <span id="calMonthLabel"></span>
-                    <button type="button" class="cal-nav-btn" id="calNext" aria-label="Next month">›</button>
-                  </div>
-                  <div class="cal-grid" id="calGrid" role="grid" aria-label="Choose a date"></div>
-                </div>
-
-                <aside class="booking-register" aria-label="Confirm your details">
-                  <div class="booking-summary" id="bookingSummary">
-                    <p class="filter-label">Appointment summary</p>
-                    <p class="summary-row"><span>Counsellor</span><strong id="summaryCounsellor">{{ selected_counsellor.name }}</strong></p>
-                    <p class="summary-row"><span>Mode</span><strong id="summaryMode">—</strong></p>
-                    <p class="summary-row"><span>Date</span><strong id="summaryDate">—</strong></p>
-                    <p class="summary-row"><span>Time</span><strong id="summaryTime">—</strong></p>
-                    <p class="summary-row"><span>Duration</span><strong>{{ session_length_minutes }} min</strong></p>
-                    <p class="summary-row"><span>Fee</span><strong>{{ session_fee_display }}</strong></p>
-                  </div>
-
-                  <div class="contact-fields">
-                    <div class="field">
-                      <label class="field-label" for="clientName">Your name</label>
-                      <input class="field-input" type="text" id="clientName" name="client_name" value="{{ form.client_name.value|default:'' }}" autocomplete="name" required />
-                      {% for error in form.client_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+<main class="booking-shell">
+    <div class="wrap booking-shell-inner">
+        <h2 id="booking-form-heading" class="sr-only">Booking form</h2>
+        <form class="booking-form" method="post" action="{% url 'book' %}?counsellor={{ selected_counsellor.slug }}"
+            id="bookingForm" data-preselected="{{ selected_counsellor.slug }}"
+            data-window-days="{{ booking_window_days }}" data-booking-horizon="{{ booking_horizon }}">{% csrf_token %}
+            <input type="hidden" name="counsellor_slug" id="counsellorSlugInput"
+                value="{{ selected_counsellor.slug }}" /><input type="hidden" name="date" id="dateInput"
+                value="{{ form.date.value|default:'' }}" /><input type="hidden" name="time" id="timeInput"
+                value="{{ form.time.value|default:'' }}" /><input type="hidden" name="mode" id="modeInput"
+                value="{{ form.mode.value|default:'' }}" /><input type="hidden" name="session_plan" id="planInput"
+                value="{{ form.session_plan.value|default:'single' }}" />
+            {% if form.non_field_errors or form.mode.errors or form.date.errors or form.time.errors or
+            form.counsellor_slug.errors %}<div class="form-errors" role="alert">{% for error in form.non_field_errors %}
+                <p>{{ error }}</p>{% endfor %}{% for error in form.mode.errors %}<p>{{ error }}</p>{% endfor %}{% for
+                error in form.date.errors %}<p>{{ error }}</p>{% endfor %}{% for error in form.time.errors %}<p>{{ error
+                    }}</p>{% endfor %}</div>{% endif %}
+            <section class="booking-flow" aria-labelledby="booking-heading">
+                <header class="booking-intro">
+                    <p class="eyebrow">Book a session</p>
+                    <h1 id="booking-heading">Find a time that works.</h1>
+                    <p class="lede">Choose how you'd like to meet, select a plan, then pick a time from {{
+                        selected_counsellor.short_name|default:selected_counsellor.name }}'s availability.</p>
+                </header>
+                <section class="booking-with panel" aria-label="Booking with">
+                    <p class="section-kicker">Your counsellor</p>
+                    <div class="selected-counsellor"><img src="{{ selected_counsellor.photo }}" width="52" height="52"
+                            alt="" aria-hidden="true" />
+                        <div><strong>{{ selected_counsellor.name }}</strong><span>{{ selected_counsellor.credentials
+                                }}</span></div>
                     </div>
-                    <div class="field">
-                      <label class="field-label" for="clientEmail">Email</label>
-                      <input class="field-input" type="email" id="clientEmail" name="client_email" value="{{ form.client_email.value|default:'' }}" autocomplete="email" required />
-                      {% for error in form.client_email.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                </section>
+                <section class="mode-block panel" aria-labelledby="modeLabel">
+                    <p class="section-kicker" id="modeLabel">1. Appointment mode</p>
+                    <div class="mode-filter" id="modeFilter" role="group" aria-labelledby="modeLabel"></div>
+                </section>
+                <section class="plan-block panel" aria-labelledby="planLabel">
+                    <div>
+                        <p class="section-kicker" id="planLabel">2. Choose your session plan</p>
+                        <p class="section-help">Packages reserve credit for future sessions with your counsellor.</p>
                     </div>
-                    <div class="field">
-                      <label class="field-label" for="clientPhone">Mobile number</label>
-                      {{ form.client_phone }}
-                      <p class="field-help" id="clientPhoneHelp">Choose your country, then enter your number.</p>
-                      {% for error in form.client_phone.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                    <div class="plan-list" id="planList" role="radiogroup" aria-labelledby="planLabel"></div>
+                </section>
+                <section class="schedule-block panel" aria-label="Choose date and time">
+                    <p class="section-kicker">3. Choose a date</p>
+                    <div class="cal-nav"><button type="button" class="cal-nav-btn" id="calPrev"
+                            aria-label="Previous month">‹</button><span id="calMonthLabel"></span><button type="button"
+                            class="cal-nav-btn" id="calNext" aria-label="Next month">›</button></div>
+                    <div class="cal-grid" id="calGrid" role="grid" aria-label="Choose a date"></div>
+                    <div class="time-choice">
+                        <p class="section-kicker">4. Choose a time</p>
+                        <div class="slot-grid" id="slotGrid"></div>
+                        <p class="slot-empty" id="slotEmpty">Select a date to view available times</p>
                     </div>
-                  </div>
-
-                  <button type="submit" class="btn btn-dark" id="confirmBtn" disabled>Confirm booking</button>
-                </aside>
-
-                <div class="slot-panel">
-                  <p class="filter-label">3. Choose a time</p>
-                  <div class="slot-grid" id="slotGrid"></div>
-                  <p class="slot-empty" id="slotEmpty">Select a date to view available times</p>
-                </div>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
+                </section>
+            </section>
+            <aside class="booking-register" aria-label="Appointment summary and your details">
+                <details class="summary-disclosure" open>
+                    <summary><span>Appointment summary</span><strong id="summaryTotal">₹1,500</strong></summary>
+                    <div class="booking-summary" id="bookingSummary">
+                        <p class="summary-row"><span>Counsellor</span><strong id="summaryCounsellor">{{
+                                selected_counsellor.name }}</strong></p>
+                        <p class="summary-row"><span>Mode</span><strong id="summaryMode">—</strong></p>
+                        <p class="summary-row"><span>Plan</span><strong id="summaryPlan">Single session</strong></p>
+                        <p class="summary-row"><span>Date &amp; time</span><strong id="summaryDateTime">—</strong></p>
+                        <p class="summary-row"><span>Duration</span><strong>{{ session_length_minutes }} min</strong>
+                        </p>
+                        <div class="price-breakdown" aria-live="polite">
+                            <p class="summary-row"><span>Package total</span><strong
+                                    id="summarySubtotal">₹1,500</strong></p>
+                            <p class="summary-row discount-row" id="packageDiscountRow" hidden><span>Package
+                                    saving</span><strong id="summaryPackageDiscount"></strong></p>
+                            <p class="summary-row discount-row" id="couponDiscountRow" hidden><span>Coupon
+                                    saving</span><strong id="summaryCouponDiscount"></strong></p>
+                            <p class="summary-row total-row"><span>Amount payable</span><strong
+                                    id="summaryTotalDetail">₹1,500</strong></p>
+                        </div>
+                        <div class="coupon-area"><button class="coupon-toggle" type="button" id="couponToggle"
+                                aria-expanded="false" aria-controls="couponFields">Have a coupon code?</button>
+                            <div class="coupon-fields" id="couponFields" hidden><label class="sr-only"
+                                    for="couponCode">Coupon code</label><input class="field-input" id="couponCode"
+                                    name="coupon_code" value="{{ form.coupon_code.value|default:'' }}"
+                                    autocomplete="off" autocapitalize="characters" placeholder="Enter code" /><button
+                                    class="coupon-apply" type="button" id="couponApply">Apply</button></div>
+                            <p class="coupon-feedback" id="couponFeedback" role="status">{% for error in
+                                form.coupon_code.errors %}{{ error }}{% endfor %}</p>
+                        </div>
+                    </div>
+                </details>
+                <div class="contact-fields">
+                    <p class="section-kicker">5. Your details</p>
+                    <div class="field"><label class="field-label" for="clientName">Your name</label><input
+                            class="field-input" type="text" id="clientName" name="client_name"
+                            value="{{ form.client_name.value|default:'' }}" autocomplete="name" required />{% for error
+                        in form.client_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}</div>
+                    <div class="field"><label class="field-label" for="clientEmail">Email</label><input
+                            class="field-input" type="email" id="clientEmail" name="client_email"
+                            value="{{ form.client_email.value|default:'' }}" autocomplete="email" required />{% for
+                        error in form.client_email.errors %}<p class="field-error">{{ error }}</p>{% endfor %}</div>
+                    <div class="field"><label class="field-label" for="clientPhone">Mobile number</label>{{
+                        form.client_phone }}<p class="field-help" id="clientPhoneHelp">Choose your country, then enter
+                            your number.</p>{% for error in form.client_phone.errors %}<p class="field-error">{{ error
+                            }}</p>{% endfor %}</div>
+                </div><button type="submit" class="btn btn-dark" id="confirmBtn" disabled>Confirm booking <span
+                        id="confirmTotal">₹1,500</span></button>
+            </aside>
+        </form>
+    </div>
+</main>
 {% endblock %}
-
-{% block extra_js %}
-{{ counsellors_json|json_script:"counsellors-data" }}
+{% block extra_js %}{{ counsellors_json|json_script:"counsellors-data" }}{{
+session_plans|json_script:"session-plans-data" }}
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/intlTelInput.min.js"></script>
 <script src="{% static 'js/phone-input.js' %}"></script>
-<script src="{% static 'js/booking.js' %}"></script>
-{% endblock %}
+<script src="{% static 'js/booking.js' %}"></script>{% endblock %}

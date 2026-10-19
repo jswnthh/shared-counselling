@@ -25,6 +25,7 @@
               <span>Mode</span>
               <strong>{% if booking.mode == "in-person" %}In person{% else %}Online{% endif %}</strong>
             </p>
+            <p class="summary-row"><span>Amount payable</span><strong>{{ booking_total_display }}</strong></p>
             {% if booking.client_phone %}
             <p class="summary-row"><span>Mobile</span><strong>{{ booking.client_phone }}</strong></p>
             {% endif %}

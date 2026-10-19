@@ -1,265 +1,42 @@
-// Booking flow for a pre-selected counsellor: mode → date → time → confirm.
-// Availability comes from /book/availability/ (server-authoritative). Submit
-// is a normal form POST.
+// The browser only renders selection state. Availability and coupon totals are
+// requested from Django; the POST repeats that validation before saving.
 (function () {
   const form = document.getElementById("bookingForm");
   const dataEl = document.getElementById("counsellors-data");
-  if (!form || !dataEl) return;
+  const plansEl = document.getElementById("session-plans-data");
+  if (!form || !dataEl || !plansEl) return;
+  const counsellor = JSON.parse(dataEl.textContent)[0];
+  const plans = JSON.parse(plansEl.textContent);
+  const $ = (id) => document.getElementById(id);
+  const inputs = { date: $("dateInput"), time: $("timeInput"), mode: $("modeInput"), plan: $("planInput") };
+  const calPrev = $("calPrev"), calNext = $("calNext"), calGrid = $("calGrid"), calMonthLabel = $("calMonthLabel"), slotGrid = $("slotGrid"), slotEmpty = $("slotEmpty");
+  const modeFilter = $("modeFilter"), planList = $("planList"), confirmBtn = $("confirmBtn"), couponCode = $("couponCode"), couponFields = $("couponFields"), couponFeedback = $("couponFeedback");
+  let selectedDate = inputs.date.value, selectedTime = inputs.time.value, selectedMode = inputs.mode.value, selectedPlan = inputs.plan.value || "single", quote = null;
+  const pad = n => String(n).padStart(2, "0");
+  const isoDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const startDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const firstMonth = d => new Date(d.getFullYear(), d.getMonth(), 1);
+  const addDays = (d, n) => { const copy = new Date(d); copy.setDate(copy.getDate()+n); return copy; };
+  const sameMonth = (a,b) => a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth();
+  const money = paise => new Intl.NumberFormat("en-IN", {style:"currency", currency:"INR", maximumFractionDigits:0}).format(paise/100);
+  const formatTime = value => { const [rawHour, minute] = value.split(":"); let hour = +rawHour; return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "PM" : "AM"}`; };
+  const formatDate = iso => new Date(`${iso}T00:00:00`).toLocaleDateString("en-GB", {day:"numeric", month:"short", year:"numeric"});
+  const today = startDay(new Date());
+  const horizon = form.dataset.bookingHorizon ? startDay(new Date(form.dataset.bookingHorizon)) : addDays(today, +(form.dataset.windowDays || 21));
+  const minMonth = firstMonth(today), maxMonth = firstMonth(horizon);
+  let currentMonth = selectedDate ? firstMonth(new Date(`${selectedDate}T00:00:00`)) : minMonth;
 
-  const counsellors = JSON.parse(dataEl.textContent);
-  const bySlug = {};
-  counsellors.forEach((c) => {
-    bySlug[c.slug] = c;
-  });
-
-  const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const windowDays = parseInt(form.dataset.windowDays, 10) || 21;
-  const serverHorizon = form.dataset.bookingHorizon
-    ? new Date(form.dataset.bookingHorizon)
-    : null;
-
-  const counsellorSlugInput = document.getElementById("counsellorSlugInput");
-  const dateInput = document.getElementById("dateInput");
-  const timeInput = document.getElementById("timeInput");
-  const modeInput = document.getElementById("modeInput");
-
-  const calPrev = document.getElementById("calPrev");
-  const calNext = document.getElementById("calNext");
-  const calMonthLabel = document.getElementById("calMonthLabel");
-  const calGrid = document.getElementById("calGrid");
-  const slotGrid = document.getElementById("slotGrid");
-  const slotEmpty = document.getElementById("slotEmpty");
-  const modeFilter = document.getElementById("modeFilter");
-  const summaryCounsellor = document.getElementById("summaryCounsellor");
-  const summaryDate = document.getElementById("summaryDate");
-  const summaryTime = document.getElementById("summaryTime");
-  const summaryMode = document.getElementById("summaryMode");
-  const confirmBtn = document.getElementById("confirmBtn");
-
-  let selectedSlug = counsellorSlugInput.value || form.dataset.preselected || "";
-  let selectedDate = dateInput.value || "";
-  let selectedTime = timeInput.value || "";
-  let selectedMode = modeInput.value || "";
-  let currentMonth = null;
-
-  const counsellor = bySlug[selectedSlug];
-  if (!counsellor) return;
-
-  const pad2 = (n) => String(n).padStart(2, "0");
-  const isoDate = (d) =>
-    `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-  const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const firstOfMonth = (d) => new Date(d.getFullYear(), d.getMonth(), 1);
-  const addDays = (d, n) => {
-    const copy = new Date(d);
-    copy.setDate(copy.getDate() + n);
-    return copy;
-  };
-  const sameMonth = (a, b) =>
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
-
-  const formatTime = (hhmmss) => {
-    const [hStr, mStr] = hhmmss.split(":");
-    let h = parseInt(hStr, 10);
-    const suffix = h >= 12 ? "PM" : "AM";
-    h = h % 12 || 12;
-    return `${h}:${mStr} ${suffix}`;
-  };
-
-  const formatDateFull = (iso) => {
-    const d = new Date(`${iso}T00:00:00`);
-    return d.toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
-
-  const today = startOfDay(new Date());
-  const horizon = serverHorizon ? startOfDay(serverHorizon) : addDays(today, windowDays);
-  const minMonth = firstOfMonth(today);
-  const maxMonth = firstOfMonth(horizon);
-
-  function renderModeChips() {
-    modeFilter.replaceChildren();
-
-    counsellor.modes.forEach((m) => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "mode-chip" + (m === selectedMode ? " is-active" : "");
-      chip.dataset.mode = m;
-      chip.textContent = m === "in-person" ? "In person" : "Online";
-      chip.addEventListener("click", () => {
-        selectedMode = m;
-        modeInput.value = m;
-        modeFilter.querySelectorAll(".mode-chip").forEach((el) => {
-          el.classList.toggle("is-active", el.dataset.mode === m);
-        });
-        updateSummary();
-      });
-      modeFilter.appendChild(chip);
-    });
-
-    if (selectedMode && !counsellor.modes.includes(selectedMode)) {
-      selectedMode = "";
-      modeInput.value = "";
-    }
-
-    // Default to the first offered mode so the flow has one less tap when
-    // the counsellor only offers one option (or as a sensible start).
-    if (!selectedMode && counsellor.modes.length === 1) {
-      selectedMode = counsellor.modes[0];
-      modeInput.value = selectedMode;
-      modeFilter
-        .querySelector(`.mode-chip[data-mode="${selectedMode}"]`)
-        ?.classList.add("is-active");
-    }
-  }
-
-  function renderCalendar() {
-    calGrid.replaceChildren();
-    calMonthLabel.textContent = currentMonth.toLocaleDateString("en-GB", {
-      month: "long",
-      year: "numeric",
-    });
-    calPrev.disabled = sameMonth(currentMonth, minMonth) || currentMonth < minMonth;
-    calNext.disabled = sameMonth(currentMonth, maxMonth);
-
-    WEEKDAY_LABELS.forEach((label) => {
-      const cell = document.createElement("span");
-      cell.className = "cal-day is-label";
-      cell.textContent = label;
-      calGrid.appendChild(cell);
-    });
-
-    const firstDay = new Date(currentMonth);
-    const leadingBlanks = (firstDay.getDay() + 6) % 7;
-    for (let i = 0; i < leadingBlanks; i++) {
-      calGrid.appendChild(document.createElement("span"));
-    }
-
-    const daysInMonth = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() + 1,
-      0
-    ).getDate();
-
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-      const iso = isoDate(date);
-      const pyWeekday = (date.getDay() + 6) % 7;
-      const hasHours = (counsellor.working_hours[String(pyWeekday)] || []).length > 0;
-      const inWindow = date >= today && date <= horizon;
-
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "cal-day";
-      btn.textContent = String(day);
-
-      if (!hasHours || !inWindow) {
-        btn.classList.add("is-disabled");
-        btn.disabled = true;
-      } else {
-        if (iso === selectedDate) btn.classList.add("is-selected");
-        btn.addEventListener("click", () => {
-          calGrid.querySelectorAll(".cal-day").forEach((el) => el.classList.remove("is-selected"));
-          btn.classList.add("is-selected");
-          fetchAvailability(iso, { preserveSelection: false });
-        });
-      }
-      calGrid.appendChild(btn);
-    }
-  }
-
-  function fetchAvailability(iso, opts) {
-    selectedDate = iso;
-    dateInput.value = iso;
-    if (!opts.preserveSelection) {
-      selectedTime = "";
-      timeInput.value = "";
-    }
-    slotGrid.replaceChildren();
-    slotEmpty.hidden = false;
-    slotEmpty.textContent = "Loading available times…";
-    updateSummary();
-
-    fetch(
-      `/book/availability/?counsellor=${encodeURIComponent(counsellor.slug)}&date=${iso}`
-    )
-      .then((res) => {
-        if (!res.ok) throw new Error(`availability ${res.status}`);
-        return res.json();
-      })
-      .then((data) => renderSlots(data.slots || []))
-      .catch(() => {
-        slotEmpty.hidden = false;
-        slotEmpty.textContent = "Couldn't load times — please try again.";
-      });
-  }
-
-  function renderSlots(slots) {
-    slotGrid.replaceChildren();
-    if (slots.length === 0) {
-      slotEmpty.hidden = false;
-      slotEmpty.textContent = "No times available that day — try another date.";
-      return;
-    }
-    slotEmpty.hidden = true;
-
-    slots.forEach((iso) => {
-      const timePart = iso.slice(11, 19);
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className =
-        "slot-chip" +
-        (timePart.slice(0, 5) === selectedTime.slice(0, 5) ? " is-selected" : "");
-      chip.textContent = formatTime(timePart);
-      chip.addEventListener("click", () => {
-        selectedTime = timePart;
-        timeInput.value = timePart;
-        slotGrid.querySelectorAll(".slot-chip").forEach((el) => el.classList.remove("is-selected"));
-        chip.classList.add("is-selected");
-        updateSummary();
-      });
-      slotGrid.appendChild(chip);
-    });
-  }
-
-  function updateSummary() {
-    summaryCounsellor.textContent = counsellor.name;
-    summaryMode.textContent =
-      selectedMode === "in-person"
-        ? "In person"
-        : selectedMode === "online"
-          ? "Online"
-          : "—";
-    summaryDate.textContent = selectedDate ? formatDateFull(selectedDate) : "—";
-    summaryTime.textContent = selectedTime ? formatTime(selectedTime) : "—";
-
-    const ready = Boolean(selectedDate && selectedTime && selectedMode);
-    confirmBtn.disabled = !ready;
-  }
-
-  calPrev.addEventListener("click", () => {
-    if (calPrev.disabled) return;
-    currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
-    renderCalendar();
-  });
-
-  calNext.addEventListener("click", () => {
-    if (calNext.disabled) return;
-    currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
-    renderCalendar();
-  });
-
-  counsellorSlugInput.value = counsellor.slug;
-  renderModeChips();
-  currentMonth = selectedDate
-    ? firstOfMonth(new Date(`${selectedDate}T00:00:00`))
-    : minMonth;
-  renderCalendar();
-  if (selectedDate) {
-    fetchAvailability(selectedDate, { preserveSelection: true });
-  }
-  updateSummary();
+  function plan() { return plans.find(item => item.code === selectedPlan) || plans[0]; }
+  function renderModes() { modeFilter.replaceChildren(); counsellor.modes.forEach(mode => { const button = document.createElement("button"); button.type="button"; button.className=`mode-chip${mode===selectedMode ? " is-active" : ""}`; button.textContent=mode === "in-person" ? "In person" : "Online"; button.addEventListener("click", () => { selectedMode=mode; inputs.mode.value=mode; renderModes(); updateSummary(); }); modeFilter.append(button); }); if (!selectedMode && counsellor.modes.length === 1) { selectedMode=counsellor.modes[0]; inputs.mode.value=selectedMode; renderModes(); } }
+  function renderPlans() { planList.replaceChildren(); plans.forEach(item => { const button=document.createElement("button"); button.type="button"; button.className=`plan-card${item.code===selectedPlan ? " is-selected" : ""}`; button.setAttribute("role", "radio"); button.setAttribute("aria-checked", String(item.code===selectedPlan)); const each = item.total_paise / item.sessions; button.innerHTML=`<span class="plan-radio" aria-hidden="true"></span><span><span class="plan-name">${item.label}</span><span class="plan-meta">${item.sessions === 1 ? "One 50-minute session" : `${money(each)} per session`}</span></span><strong class="plan-price">${money(item.total_paise)}</strong>${item.discount_percent ? `<span class="plan-save">Save ${item.discount_percent}%</span>` : ""}`; button.addEventListener("click", () => { selectedPlan=item.code; inputs.plan.value=item.code; quote=null; renderPlans(); updateSummary(); if (couponCode.value.trim()) applyCoupon(); }); planList.append(button); }); }
+  function renderCalendar() { calGrid.replaceChildren(); calMonthLabel.textContent=currentMonth.toLocaleDateString("en-GB", {month:"long", year:"numeric"}); calPrev.disabled=sameMonth(currentMonth,minMonth)||currentMonth<minMonth; calNext.disabled=sameMonth(currentMonth,maxMonth); ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].forEach(label=>{const el=document.createElement("span");el.className="cal-day is-label";el.textContent=label;calGrid.append(el);}); const firstDay=new Date(currentMonth); for(let i=0;i<(firstDay.getDay()+6)%7;i++)calGrid.append(document.createElement("span")); const days=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+1,0).getDate(); for(let day=1;day<=days;day++){const date=new Date(currentMonth.getFullYear(),currentMonth.getMonth(),day), iso=isoDate(date), weekday=(date.getDay()+6)%7, enabled=date>=today&&date<=horizon&&(counsellor.working_hours[String(weekday)]||[]).length; const button=document.createElement("button");button.type="button";button.className=`cal-day${iso===selectedDate?" is-selected":""}`;button.textContent=day;button.disabled=!enabled;if(!enabled)button.classList.add("is-disabled");else button.addEventListener("click",()=>fetchAvailability(iso));calGrid.append(button);} }
+  function fetchAvailability(iso) { selectedDate=iso; inputs.date.value=iso; selectedTime=""; inputs.time.value=""; slotGrid.replaceChildren();slotEmpty.hidden=false;slotEmpty.textContent="Loading available times…";renderCalendar();updateSummary(); fetch(`/book/availability/?counsellor=${encodeURIComponent(counsellor.slug)}&date=${iso}`).then(res=>{if(!res.ok)throw Error();return res.json();}).then(data=>renderSlots(data.slots||[])).catch(()=>{slotEmpty.hidden=false;slotEmpty.textContent="Couldn't load times — please try again.";}); }
+  function renderSlots(slots) { slotGrid.replaceChildren(); if(!slots.length){slotEmpty.hidden=false;slotEmpty.textContent="No times available that day — try another date.";return;} slotEmpty.hidden=true; slots.forEach(slot=>{const time=slot.slice(11,19), button=document.createElement("button");button.type="button";button.className=`slot-chip${time.slice(0,5)===selectedTime.slice(0,5)?" is-selected":""}`;button.textContent=formatTime(time);button.addEventListener("click",()=>{selectedTime=time;inputs.time.value=time;renderSlots(slots);updateSummary();});slotGrid.append(button);}); }
+  function localQuote() { const item=plan(), subtotal=item.sessions*150000, saving=subtotal-item.total_paise; return {plan:item, subtotal_paise:subtotal, package_discount_paise:saving, coupon_discount_paise:0, total_paise:item.total_paise}; }
+  function updateSummary() { const activeQuote=quote||localQuote(), item=plan(); $("summaryCounsellor").textContent=counsellor.name;$("summaryMode").textContent=selectedMode === "in-person" ? "In person" : selectedMode === "online" ? "Online" : "—";$("summaryPlan").textContent=item.label;$("summaryDateTime").textContent=selectedDate ? `${formatDate(selectedDate)}${selectedTime ? ` · ${formatTime(selectedTime)}` : ""}` : "—";$("summarySubtotal").textContent=money(activeQuote.subtotal_paise);$("summaryTotal").textContent=money(activeQuote.total_paise);$("summaryTotalDetail").textContent=money(activeQuote.total_paise);$("confirmTotal").textContent=money(activeQuote.total_paise); const pack=$("packageDiscountRow"), coupon=$("couponDiscountRow");pack.hidden=!activeQuote.package_discount_paise;coupon.hidden=!activeQuote.coupon_discount_paise;$("summaryPackageDiscount").textContent=`−${money(activeQuote.package_discount_paise)}`;$("summaryCouponDiscount").textContent=`−${money(activeQuote.coupon_discount_paise)}`;confirmBtn.disabled=!(selectedDate&&selectedTime&&selectedMode); }
+  function csrf() { return form.querySelector("[name=csrfmiddlewaretoken]").value; }
+  function applyCoupon() { const body=new URLSearchParams({session_plan:selectedPlan,coupon_code:couponCode.value}); couponFeedback.className="coupon-feedback";couponFeedback.textContent="Checking code…";fetch("/book/pricing/", {method:"POST",headers:{"X-CSRFToken":csrf(),"Content-Type":"application/x-www-form-urlencoded","X-Requested-With":"XMLHttpRequest"},body}).then(async response=>{const data=await response.json();if(!response.ok)throw data;return data;}).then(data=>{quote=data;couponCode.value=data.coupon_code;couponFeedback.textContent=`Coupon applied — you save ${money(data.coupon_discount_paise)}.`;couponFeedback.classList.add("is-success");updateSummary();}).catch(data=>{quote=null;couponFeedback.textContent=data.error||"We couldn't validate that code.";couponFeedback.classList.add("is-error");updateSummary();}); }
+  $("couponToggle").addEventListener("click",()=>{const opening=couponFields.hidden;couponFields.hidden=!opening;$("couponToggle").setAttribute("aria-expanded",String(opening));if(opening) setTimeout(()=>couponCode.focus(),0);});$("couponApply").addEventListener("click",applyCoupon);couponCode.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();applyCoupon();}});
+  calPrev.addEventListener("click",()=>{if(!calPrev.disabled){currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()-1,1);renderCalendar();}});calNext.addEventListener("click",()=>{if(!calNext.disabled){currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+1,1);renderCalendar();}});
+  renderModes();renderPlans();renderCalendar();if(selectedDate)fetchAvailability(selectedDate);updateSummary();
 })();

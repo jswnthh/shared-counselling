@@ -7,6 +7,7 @@ from phonenumber_field.formfields import PhoneNumberField
 from .data import get_counsellor_by_slug, get_counsellors
 from .models import Booking
 from .scheduling import get_available_slots
+from .scheduling import SESSION_PLANS, quote_booking
 
 
 class BookingForm(forms.Form):
@@ -14,6 +15,12 @@ class BookingForm(forms.Form):
     date = forms.DateField()
     time = forms.TimeField()
     mode = forms.ChoiceField(choices=Booking.Mode.choices)
+    session_plan = forms.ChoiceField(
+        choices=[(key, value["label"]) for key, value in SESSION_PLANS.items()],
+        required=False,
+        initial="single",
+    )
+    coupon_code = forms.CharField(max_length=40, required=False)
     client_name = forms.CharField(max_length=120)
     client_email = forms.EmailField()
     client_phone = PhoneNumberField(
@@ -46,6 +53,14 @@ class BookingForm(forms.Form):
         mode = cleaned.get("mode")
         if mode and mode not in counsellor["modes"]:
             self.add_error("mode", "This counsellor doesn't offer that mode.")
+
+        plan_code = cleaned.get("session_plan") or "single"
+        cleaned["session_plan"] = plan_code
+        quote = quote_booking(plan_code, cleaned.get("coupon_code", ""))
+        if quote["coupon_error"]:
+            self.add_error("coupon_code", quote["coupon_error"])
+        else:
+            cleaned["quote"] = quote
 
         date_, time_ = cleaned.get("date"), cleaned.get("time")
         if date_ and time_:

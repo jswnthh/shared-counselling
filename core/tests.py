@@ -89,6 +89,40 @@ class BookingViewTests(TestCase):
         self.assertEqual(booking.client_phone.as_e164, "+919876543210")
         self.assertEqual(response.url, reverse("book_confirmed", args=[booking.pk]))
 
+    def test_package_coupon_is_validated_and_saved_server_side(self):
+        data = self._post_data()
+        data.update({"session_plan": "three", "coupon_code": "THANKYOU10"})
+        response = self.client.post(reverse("book"), data)
+        self.assertEqual(response.status_code, 302)
+        booking = Booking.objects.get()
+        self.assertEqual(booking.session_plan, "three")
+        self.assertEqual(booking.coupon_code, "THANKYOU10")
+        self.assertEqual(booking.total_paise, 364500)
+
+    def test_invalid_coupon_does_not_create_booking(self):
+        data = self._post_data()
+        data.update({"coupon_code": "NOT-A-COUPON"})
+        response = self.client.post(reverse("book"), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Booking.objects.count(), 0)
+        self.assertContains(response, "coupon code isn’t valid")
+
+    def test_pricing_endpoint_rejects_invalid_coupon(self):
+        response = self.client.post(
+            reverse("booking_pricing"),
+            {"session_plan": "six", "coupon_code": "invalid"},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["error"], "That coupon code isn’t valid.")
+
+    def test_pricing_endpoint_returns_authoritative_total(self):
+        response = self.client.post(
+            reverse("booking_pricing"),
+            {"session_plan": "six", "coupon_code": "THANKYOU10"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["total_paise"], 688500)
+
     def test_post_sends_confirmation_email(self):
         from django.core import mail
 

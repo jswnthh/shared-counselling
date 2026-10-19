@@ -14,7 +14,10 @@ from .calendar_sync import create_calendar_event
 from .data import get_counsellor_by_slug, get_counsellors, get_services, get_topic_labels
 from .forms import BookingForm
 from .models import Booking
-from .scheduling import BOOKING_WINDOW_DAYS, SESSION_FEE_DISPLAY, SESSION_LENGTH_MINUTES, get_available_slots
+from .scheduling import (
+    BOOKING_WINDOW_DAYS, SESSION_FEE_DISPLAY, SESSION_LENGTH_MINUTES,
+    SESSION_PLANS, get_available_slots, quote_booking,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +139,11 @@ def book(request):
                         client_email=form.cleaned_data["client_email"],
                         client_phone=form.cleaned_data["client_phone"],
                         mode=form.cleaned_data["mode"],
+                        session_plan=form.cleaned_data["session_plan"],
+                        coupon_code=form.cleaned_data["quote"]["coupon_code"],
+                        package_discount_paise=form.cleaned_data["quote"]["package_discount_paise"],
+                        coupon_discount_paise=form.cleaned_data["quote"]["coupon_discount_paise"],
+                        total_paise=form.cleaned_data["quote"]["total_paise"],
                         start_at=start_at,
                         end_at=end_at,
                     )
@@ -208,6 +216,10 @@ def book(request):
         ).isoformat(),
         "session_fee_display": SESSION_FEE_DISPLAY,
         "session_length_minutes": SESSION_LENGTH_MINUTES,
+        "session_plans": [
+            {"code": code, **plan, "total_paise": quote_booking(code)["total_paise"]}
+            for code, plan in SESSION_PLANS.items()
+        ],
     }
 
     return render(request, "booking.html", context)
@@ -231,6 +243,21 @@ def booking_availability(request):
     })
 
 
+@require_http_methods(["POST"])
+def booking_pricing(request):
+    """Validate coupon pricing server-side for the progressive booking UI."""
+    try:
+        quote = quote_booking(request.POST.get("session_plan", ""), request.POST.get("coupon_code", ""))
+    except ValueError as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
+    if quote["coupon_error"]:
+        return JsonResponse({"error": quote["coupon_error"]}, status=400)
+    return JsonResponse({
+        **quote,
+        "currency": "INR",
+    })
+
+
 @require_GET
 def book_confirmed(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
@@ -238,6 +265,7 @@ def book_confirmed(request, booking_id):
     context = {
         "booking": booking,
         "counsellor_name": counsellor["name"] if counsellor else booking.counsellor_slug.replace("-", " ").title(),
+        "booking_total_display": f"₹{booking.total_paise / 100:,.0f}",
     }
     return render(request, "booking_confirmed.html", context)
 
