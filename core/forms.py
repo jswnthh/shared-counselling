@@ -6,8 +6,7 @@ from phonenumber_field.formfields import PhoneNumberField
 
 from .data import get_counsellor_by_slug, get_counsellors
 from .models import Booking
-from .scheduling import get_available_slots
-from .scheduling import SESSION_PLANS, quote_booking
+from .scheduling import get_available_slots, get_session_plans, quote_booking
 
 
 class BookingForm(forms.Form):
@@ -15,11 +14,7 @@ class BookingForm(forms.Form):
     date = forms.DateField()
     time = forms.TimeField()
     mode = forms.ChoiceField(choices=Booking.Mode.choices)
-    session_plan = forms.ChoiceField(
-        choices=[(key, value["label"]) for key, value in SESSION_PLANS.items()],
-        required=False,
-        initial="single",
-    )
+    session_plan = forms.ChoiceField(choices=(), required=False)
     coupon_code = forms.CharField(max_length=40, required=False)
     client_name = forms.CharField(max_length=120)
     client_email = forms.EmailField()
@@ -43,6 +38,13 @@ class BookingForm(forms.Form):
         self.fields["counsellor_slug"].choices = [
             (c["slug"], c["name"]) for c in get_counsellors(bookable_only=True)
         ]
+        selected_slug = self.data.get("counsellor_slug") or self.initial.get("counsellor_slug")
+        counsellor = get_counsellor_by_slug(selected_slug, bookable_only=True)
+        if counsellor:
+            plans = get_session_plans(counsellor)
+            self.fields["session_plan"].choices = [(plan["code"], plan["label"]) for plan in plans]
+            if plans:
+                self.fields["session_plan"].initial = plans[0]["code"]
 
     def clean(self):
         cleaned = super().clean()
@@ -54,9 +56,12 @@ class BookingForm(forms.Form):
         if mode and mode not in counsellor["modes"]:
             self.add_error("mode", "This counsellor doesn't offer that mode.")
 
-        plan_code = cleaned.get("session_plan") or "single"
+        plan_code = cleaned.get("session_plan") or self.fields["session_plan"].initial
+        if not plan_code:
+            self.add_error("session_plan", "No session packages are currently available for this counsellor.")
+            return cleaned
         cleaned["session_plan"] = plan_code
-        quote = quote_booking(plan_code, cleaned.get("coupon_code", ""))
+        quote = quote_booking(counsellor, plan_code, cleaned.get("coupon_code", ""))
         if quote["coupon_error"]:
             self.add_error("coupon_code", quote["coupon_error"])
         else:

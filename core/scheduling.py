@@ -5,7 +5,7 @@ from datetime import datetime, time, timedelta
 from django.utils import timezone
 
 from .calendar_sync import get_busy_intervals
-from .models import Booking
+from .models import Booking, CounsellorPackage
 
 SESSION_LENGTH_MINUTES = 50
 SLOT_STEP_MINUTES = 60  # slots start on the hour, leaving a 10-minute gap
@@ -14,29 +14,42 @@ MIN_LEAD_TIME = timedelta(hours=2)
 SESSION_FEE_PAISE = 150000
 SESSION_FEE_DISPLAY = "₹1,500"
 
-# Prices are deliberately defined here, not in the browser.  The booking form
-# and the small pricing endpoint both use these values, so a submitted booking
-# can never trust a client-side total.
-SESSION_PLANS = {
-    "single": {"label": "Single session", "sessions": 1, "discount_percent": 0},
-    "three": {"label": "3-session package", "sessions": 3, "discount_percent": 10},
-    "six": {"label": "6-session package", "sessions": 6, "discount_percent": 15},
-}
+def get_session_plans(counsellor):
+    """Return only active packages configured for this counsellor in admin."""
+    custom_packages = list(
+        CounsellorPackage.objects.filter(
+            counsellor__slug=counsellor["slug"],
+            is_active=True,
+        )
+    )
+    plans = []
+    for package in custom_packages:
+        subtotal = SESSION_FEE_PAISE * package.sessions
+        total_paise = package.total_price_rupees * 100
+        discount = max(subtotal - total_paise, 0)
+        plans.append({
+            "code": f"package-{package.pk}",
+            "label": package.name,
+            "sessions": package.sessions,
+            "total_paise": total_paise,
+            "discount_percent": round(discount * 100 / subtotal) if subtotal else 0,
+        })
+    return plans
 
 
-def quote_booking(plan_code, coupon_code=""):
+def quote_booking(counsellor, plan_code, coupon_code=""):
     """Return the authoritative package quote in paise.
 
     THANKYOU10 is the existing game reward. Keeping its rule in Python means
     the UI can show feedback without becoming the source of truth.
     """
-    plan = SESSION_PLANS.get(plan_code)
+    plan = next((item for item in get_session_plans(counsellor) if item["code"] == plan_code), None)
     if plan is None:
         raise ValueError("Choose a valid session plan.")
 
     subtotal = SESSION_FEE_PAISE * plan["sessions"]
-    package_discount = subtotal * plan["discount_percent"] // 100
-    after_package = subtotal - package_discount
+    package_discount = max(subtotal - plan["total_paise"], 0)
+    after_package = plan["total_paise"]
     normalized_code = (coupon_code or "").strip().upper()
     coupon_discount = 0
     coupon_error = ""
@@ -56,6 +69,17 @@ def quote_booking(plan_code, coupon_code=""):
         "total_paise": after_package - coupon_discount,
         "coupon_error": coupon_error,
     }
+
+
+def session_plan_label(plan_code):
+    """Resolve a saved custom-plan code for email/admin display."""
+    if plan_code.startswith("package-"):
+        try:
+            package_id = int(plan_code.removeprefix("package-"))
+        except ValueError:
+            return plan_code
+        return CounsellorPackage.objects.filter(pk=package_id).values_list("name", flat=True).first() or plan_code
+    return plan_code
 
 
 def get_available_slots(counsellor, date_):

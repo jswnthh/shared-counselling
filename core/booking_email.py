@@ -6,7 +6,7 @@ from django.utils.formats import date_format
 from django.utils import timezone
 
 from .data import get_counsellor_by_slug
-from .scheduling import SESSION_LENGTH_MINUTES, SESSION_PLANS
+from .scheduling import SESSION_LENGTH_MINUTES, session_plan_label
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ def send_booking_emails(booking):
         f"  Client:     {booking.client_name}\n"
         f"  Email:      {booking.client_email}\n"
         f"  Mobile:     {booking.client_phone or '—'}\n"
-        f"  Plan:       {SESSION_PLANS.get(booking.session_plan, {}).get('label', 'Single session')}\n"
+        f"  Plan:       {session_plan_label(booking.session_plan)}\n"
         f"  Total:      ₹{booking.total_paise / 100:,.0f}\n"
     )
     practice = _practice_inboxes()

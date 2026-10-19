@@ -16,7 +16,7 @@ from .forms import BookingForm
 from .models import Booking
 from .scheduling import (
     BOOKING_WINDOW_DAYS, SESSION_FEE_DISPLAY, SESSION_LENGTH_MINUTES,
-    SESSION_PLANS, get_available_slots, quote_booking,
+    get_available_slots, get_session_plans, quote_booking,
 )
 
 logger = logging.getLogger(__name__)
@@ -216,10 +216,7 @@ def book(request):
         ).isoformat(),
         "session_fee_display": SESSION_FEE_DISPLAY,
         "session_length_minutes": SESSION_LENGTH_MINUTES,
-        "session_plans": [
-            {"code": code, **plan, "total_paise": quote_booking(code)["total_paise"]}
-            for code, plan in SESSION_PLANS.items()
-        ],
+        "session_plans": get_session_plans(selected_counsellor),
     }
 
     return render(request, "booking.html", context)
@@ -247,7 +244,10 @@ def booking_availability(request):
 def booking_pricing(request):
     """Validate coupon pricing server-side for the progressive booking UI."""
     try:
-        quote = quote_booking(request.POST.get("session_plan", ""), request.POST.get("coupon_code", ""))
+        counsellor = get_counsellor_by_slug(request.POST.get("counsellor", ""), bookable_only=True)
+        if counsellor is None:
+            return JsonResponse({"error": "Unknown counsellor."}, status=400)
+        quote = quote_booking(counsellor, request.POST.get("session_plan", ""), request.POST.get("coupon_code", ""))
     except ValueError as exc:
         return JsonResponse({"error": str(exc)}, status=400)
     if quote["coupon_error"]:

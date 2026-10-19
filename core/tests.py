@@ -12,7 +12,7 @@ from PIL import Image
 
 from .data import get_counsellor_by_slug, get_counsellors
 from .images import card_relpath, thumb_relpath, write_static_portrait
-from .models import Booking, Counsellor
+from .models import Booking, Counsellor, CounsellorPackage
 from .scheduling import MIN_LEAD_TIME, get_available_slots
 
 
@@ -61,6 +61,16 @@ class AvailabilityTests(TestCase):
 class BookingViewTests(TestCase):
     def setUp(self):
         self.counsellor = get_counsellor_by_slug(get_counsellors()[0]["slug"])
+        counsellor_record = Counsellor.objects.get(slug=self.counsellor["slug"])
+        self.single_package = CounsellorPackage.objects.create(
+            counsellor=counsellor_record, name="Single session", sessions=1, total_price_rupees=1500, order=1,
+        )
+        self.three_package = CounsellorPackage.objects.create(
+            counsellor=counsellor_record, name="3-session package", sessions=3, total_price_rupees=4050, order=2,
+        )
+        self.six_package = CounsellorPackage.objects.create(
+            counsellor=counsellor_record, name="6-session package", sessions=6, total_price_rupees=7650, order=3,
+        )
         self.date = next_working_date(self.counsellor)
         self.slot = get_available_slots(self.counsellor, self.date)[0]
 
@@ -91,11 +101,11 @@ class BookingViewTests(TestCase):
 
     def test_package_coupon_is_validated_and_saved_server_side(self):
         data = self._post_data()
-        data.update({"session_plan": "three", "coupon_code": "THANKYOU10"})
+        data.update({"session_plan": f"package-{self.three_package.pk}", "coupon_code": "THANKYOU10"})
         response = self.client.post(reverse("book"), data)
         self.assertEqual(response.status_code, 302)
         booking = Booking.objects.get()
-        self.assertEqual(booking.session_plan, "three")
+        self.assertEqual(booking.session_plan, f"package-{self.three_package.pk}")
         self.assertEqual(booking.coupon_code, "THANKYOU10")
         self.assertEqual(booking.total_paise, 364500)
 
@@ -110,7 +120,7 @@ class BookingViewTests(TestCase):
     def test_pricing_endpoint_rejects_invalid_coupon(self):
         response = self.client.post(
             reverse("booking_pricing"),
-            {"session_plan": "six", "coupon_code": "invalid"},
+            {"counsellor": self.counsellor["slug"], "session_plan": f"package-{self.six_package.pk}", "coupon_code": "invalid"},
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["error"], "That coupon code isn’t valid.")
@@ -118,10 +128,25 @@ class BookingViewTests(TestCase):
     def test_pricing_endpoint_returns_authoritative_total(self):
         response = self.client.post(
             reverse("booking_pricing"),
-            {"session_plan": "six", "coupon_code": "THANKYOU10"},
+            {"counsellor": self.counsellor["slug"], "session_plan": f"package-{self.six_package.pk}", "coupon_code": "THANKYOU10"},
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["total_paise"], 688500)
+
+    def test_counsellor_package_from_admin_data_drives_booking_price(self):
+        package = CounsellorPackage.objects.create(
+            counsellor=Counsellor.objects.get(slug=self.counsellor["slug"]),
+            name="Four-session package",
+            sessions=4,
+            total_price_rupees=5200,
+            order=1,
+        )
+        response = self.client.post(
+            reverse("booking_pricing"),
+            {"counsellor": self.counsellor["slug"], "session_plan": f"package-{package.pk}", "coupon_code": ""},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["total_paise"], 520000)
 
     def test_post_sends_confirmation_email(self):
         from django.core import mail
@@ -256,6 +281,7 @@ class CounsellorAdminPermissionTests(TestCase):
             "slug": self.mine.slug,
             "credentials": self.mine.credentials,
             "location": self.mine.location,
+            "whatsapp_number": self.mine.whatsapp_number,
             "photo_placeholder": "images/face_1.avif",
             "languages": "[]",
             "modes": "[]",
@@ -271,6 +297,10 @@ class CounsellorAdminPermissionTests(TestCase):
             "specialty_links-INITIAL_FORMS": "0",
             "specialty_links-MIN_NUM_FORMS": "0",
             "specialty_links-MAX_NUM_FORMS": "1000",
+            "packages-TOTAL_FORMS": "0",
+            "packages-INITIAL_FORMS": "0",
+            "packages-MIN_NUM_FORMS": "0",
+            "packages-MAX_NUM_FORMS": "1000",
         }
         response = self.client.post(url, post_data)
         self.assertEqual(response.status_code, 302)

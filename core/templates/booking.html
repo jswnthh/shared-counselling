@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Book a session — Shared Counselling{% endblock %}
-{% block meta_description %}Book a session with {{ selected_counsellor.name }} — pick a mode, plan, date and time that
-works for you.{% endblock %}
+{% block meta_description %}Book a session with {{ selected_counsellor.name }} — pick a mode, plan, date and time that works for you.
+{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/booking.css' %}" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />{%
-endblock %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />
+{% endblock %}
 {% block content %}
+
 <main class="booking-shell">
     <div class="wrap booking-shell-inner">
         <h2 id="booking-form-heading" class="sr-only">Booking form</h2>
@@ -19,25 +21,21 @@ endblock %}
                 value="{{ form.date.value|default:'' }}" /><input type="hidden" name="time" id="timeInput"
                 value="{{ form.time.value|default:'' }}" /><input type="hidden" name="mode" id="modeInput"
                 value="{{ form.mode.value|default:'' }}" /><input type="hidden" name="session_plan" id="planInput"
-                value="{{ form.session_plan.value|default:'single' }}" />
-            {% if form.non_field_errors or form.mode.errors or form.date.errors or form.time.errors or
-            form.counsellor_slug.errors %}<div class="form-errors" role="alert">{% for error in form.non_field_errors %}
-                <p>{{ error }}</p>{% endfor %}{% for error in form.mode.errors %}<p>{{ error }}</p>{% endfor %}{% for
-                error in form.date.errors %}<p>{{ error }}</p>{% endfor %}{% for error in form.time.errors %}<p>{{ error
-                    }}</p>{% endfor %}</div>{% endif %}
+                value="{{ form.session_plan.value|default:'' }}" />
+            {% if form.non_field_errors or form.mode.errors or form.date.errors or form.time.errors or form.counsellor_slug.errors or form.session_plan.errors %}
+            <div class="form-errors" role="alert">{{ form.non_field_errors }}{{ form.mode.errors }}{{ form.date.errors }}{{ form.time.errors }}{{ form.counsellor_slug.errors }}{{ form.session_plan.errors }}</div>
+            {% endif %}
             <section class="booking-flow" aria-labelledby="booking-heading">
                 <header class="booking-intro">
                     <p class="eyebrow">Book a session</p>
                     <h1 id="booking-heading">Find a time that works.</h1>
-                    <p class="lede">Choose how you'd like to meet, select a plan, then pick a time from {{
-                        selected_counsellor.short_name|default:selected_counsellor.name }}'s availability.</p>
+                    <p class="lede">Choose how you'd like to meet, select a plan, then pick a time from {{ selected_counsellor.short_name|default:selected_counsellor.name }}'s availability.</p>
                 </header>
                 <section class="booking-with panel" aria-label="Booking with">
                     <p class="section-kicker">Your counsellor</p>
                     <div class="selected-counsellor"><img src="{{ selected_counsellor.photo }}" width="52" height="52"
                             alt="" aria-hidden="true" />
-                        <div><strong>{{ selected_counsellor.name }}</strong><span>{{ selected_counsellor.credentials
-                                }}</span></div>
+                        <div><strong>{{ selected_counsellor.name }}</strong><span>{{ selected_counsellor.credentials }}</span></div>
                     </div>
                 </section>
                 <section class="mode-block panel" aria-labelledby="modeLabel">
@@ -68,8 +66,7 @@ endblock %}
                 <details class="summary-disclosure" open>
                     <summary><span>Appointment summary</span><strong id="summaryTotal">₹1,500</strong></summary>
                     <div class="booking-summary" id="bookingSummary">
-                        <p class="summary-row"><span>Counsellor</span><strong id="summaryCounsellor">{{
-                                selected_counsellor.name }}</strong></p>
+                        <p class="summary-row"><span>Counsellor</span><strong id="summaryCounsellor">{{ selected_counsellor.name }}</strong></p>
                         <p class="summary-row"><span>Mode</span><strong id="summaryMode">—</strong></p>
                         <p class="summary-row"><span>Plan</span><strong id="summaryPlan">Single session</strong></p>
                         <p class="summary-row"><span>Date &amp; time</span><strong id="summaryDateTime">—</strong></p>
@@ -92,8 +89,7 @@ endblock %}
                                     name="coupon_code" value="{{ form.coupon_code.value|default:'' }}"
                                     autocomplete="off" autocapitalize="characters" placeholder="Enter code" /><button
                                     class="coupon-apply" type="button" id="couponApply">Apply</button></div>
-                            <p class="coupon-feedback" id="couponFeedback" role="status">{% for error in
-                                form.coupon_code.errors %}{{ error }}{% endfor %}</p>
+                            <p class="coupon-feedback" id="couponFeedback" role="status">{{ form.coupon_code.errors }}</p>
                         </div>
                     </div>
                 </details>
@@ -101,16 +97,12 @@ endblock %}
                     <p class="section-kicker">5. Your details</p>
                     <div class="field"><label class="field-label" for="clientName">Your name</label><input
                             class="field-input" type="text" id="clientName" name="client_name"
-                            value="{{ form.client_name.value|default:'' }}" autocomplete="name" required />{% for error
-                        in form.client_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}</div>
+                            value="{{ form.client_name.value|default:'' }}" autocomplete="name" required /><div class="field-error">{{ form.client_name.errors }}</div></div>
                     <div class="field"><label class="field-label" for="clientEmail">Email</label><input
                             class="field-input" type="email" id="clientEmail" name="client_email"
-                            value="{{ form.client_email.value|default:'' }}" autocomplete="email" required />{% for
-                        error in form.client_email.errors %}<p class="field-error">{{ error }}</p>{% endfor %}</div>
-                    <div class="field"><label class="field-label" for="clientPhone">Mobile number</label>{{
-                        form.client_phone }}<p class="field-help" id="clientPhoneHelp">Choose your country, then enter
-                            your number.</p>{% for error in form.client_phone.errors %}<p class="field-error">{{ error
-                            }}</p>{% endfor %}</div>
+                            value="{{ form.client_email.value|default:'' }}" autocomplete="email" required /><div class="field-error">{{ form.client_email.errors }}</div></div>
+                    <div class="field"><label class="field-label" for="clientPhone">Mobile number</label>{{ form.client_phone }}<p class="field-help" id="clientPhoneHelp">Choose your country, then enter
+                            your number.</p><div class="field-error">{{ form.client_phone.errors }}</div></div>
                 </div><button type="submit" class="btn btn-dark" id="confirmBtn" disabled>Confirm booking <span
                         id="confirmTotal">₹1,500</span></button>
             </aside>
@@ -118,8 +110,7 @@ endblock %}
     </div>
 </main>
 {% endblock %}
-{% block extra_js %}{{ counsellors_json|json_script:"counsellors-data" }}{{
-session_plans|json_script:"session-plans-data" }}
+{% block extra_js %}{{ counsellors_json|json_script:"counsellors-data" }}{{ session_plans|json_script:"session-plans-data" }}
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/intlTelInput.min.js"></script>
 <script src="{% static 'js/phone-input.js' %}"></script>
 <script src="{% static 'js/booking.js' %}"></script>{% endblock %}

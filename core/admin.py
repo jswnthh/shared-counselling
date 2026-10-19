@@ -7,6 +7,7 @@ from .models import (
     Booking,
     CalendarAccount,
     Counsellor,
+    CounsellorPackage,
     CounsellorSpecialty,
     CounsellorWorkingHours,
     ServiceCategory,
@@ -37,6 +38,14 @@ class CounsellorSpecialtyInline(admin.TabularInline):
     autocomplete_fields = ("topic",)
 
 
+class CounsellorPackageInline(admin.TabularInline):
+    model = CounsellorPackage
+    extra = 1
+    fields = ("name", "sessions", "total_price_rupees", "is_active", "order")
+    ordering = ("order", "pk")
+    help_text = "Enter the full package price in rupees: ₹4,050 is 4050."
+
+
 class CounsellorAdminForm(forms.ModelForm):
     photo_upload = forms.ImageField(
         required=False,
@@ -59,7 +68,7 @@ class CounsellorAdmin(admin.ModelAdmin):
     list_filter = ("is_active",)
     list_editable = ("is_active",)
     search_fields = ("name", "slug", "location")
-    inlines = [CounsellorWorkingHoursInline, CounsellorSpecialtyInline]
+    inlines = [CounsellorWorkingHoursInline, CounsellorSpecialtyInline, CounsellorPackageInline]
     fieldsets = (
         (
             None,

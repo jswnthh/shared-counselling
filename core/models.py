@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
 from phonenumber_field.modelfields import PhoneNumberField
@@ -134,6 +135,30 @@ class CounsellorSpecialty(models.Model):
 
     def __str__(self):
         return f"{self.counsellor.slug} · {self.topic.slug}"
+
+
+class CounsellorPackage(models.Model):
+    """A sellable session package managed from a counsellor's admin page."""
+
+    counsellor = models.ForeignKey(
+        Counsellor,
+        on_delete=models.CASCADE,
+        related_name="packages",
+    )
+    name = models.CharField(max_length=80)
+    sessions = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)])
+    total_price_rupees = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)],
+        help_text="Total package price in whole rupees. For ₹4,050 enter 4050.",
+    )
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "pk"]
+
+    def __str__(self):
+        return f"{self.counsellor.name} · {self.name}"
 
 
 class Booking(models.Model):
