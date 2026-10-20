@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ c.name }} — Shared Counselling{% endblock %}
+{% block meta_description %}{{ c.intro }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/counsellors.css' %}" />
+{% endblock %}
+{% block content %}
+<div class="wrap counsellor-detail">
+  <!-- <nav aria-label="Breadcrumb">
+    <a class="btn btn-outline" href="{% url 'counsellors' %}">All counsellors</a>
+  </nav> -->
+  <div class="profile-panel" data-slug="{{ c.slug }}">
+    <div class="profile-layout">
+      <div class="profile-portrait">
+        <img
+          src="{{ c.photo }}"
+          width="320"
+          height="400"
+          alt=""
+          decoding="async"
+          aria-hidden="true"
+        />
+      </div>
+
+      <div class="profile-stream">
+        <section class="profile-hero">
+          <div class="profile-intro">
+            <h1 class="profile-name" id="profile-title-{{ c.slug }}">{{ c.name }}</h1>
+            <p class="profile-credentials">{{ c.credentials }}</p>
+            <div class="profile-bio">
+              {% for paragraph in c.bio_paragraphs %}
+              <p>{{ paragraph }}</p>
+              {% empty %}
+              <p>{{ c.bio }}</p>
+              {% endfor %}
+            </div>
+            <p class="meta">{{ c.location }} · {% for mode in c.modes %}{% if mode == "in-person" %}In person{% else %}Online{% endif %}{% if not forloop.last %} &amp; {% endif %}{% endfor %} · {{ c.languages|join:", " }}</p>
+            <p class="status-line">{% if c.is_active %}Accepting new clients{% else %}Not currently available{% endif %}</p>
+            <div class="profile-actions">
+              {% include "includes/counsellor_actions.html" with c=c %}
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="profile-info-cards" aria-label="Practice details">
+      <article class="info-card">
+        <h2 class="info-card-title">
+          <svg class="info-card-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5L12 14.8 7.5 16.7l.9-5L4.8 8.2l5-.7L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+          Specialties
+        </h2>
+        <ul class="profile-chips">
+          {% for label in c.specialty_labels|slice:":10" %}
+          <li>{{ label }}</li>
+          {% endfor %}
+        </ul>
+      </article>
+
+      <article class="info-card">
+        <h2 class="info-card-title">
+          <svg class="info-card-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 19V5M4 19h16M8 15V9M12 15V7M16 15v-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Therapeutic Approaches
+        </h2>
+        <ul class="profile-chips">
+          {% for modality in c.modalities %}
+          <li>{{ modality }}</li>
+          {% endfor %}
+        </ul>
+      </article>
+    </section>
+  </div>
+</div>
+{% endblock %}

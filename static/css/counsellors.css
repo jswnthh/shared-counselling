@@ -1,3 +1,13 @@
+/* ---------- Dedicated profile page ---------- */
+.counsellor-detail {
+  padding-top: 144px;
+  padding-bottom: 64px;
+}
+
+.counsellor-detail .profile-panel {
+  padding: 32px 0 0;
+}
+
 /* ---------- Counsellors hero ---------- */
 .counsellors-hero {
   padding: 9rem 0 2rem;
@@ -177,10 +187,22 @@
 
 .card-footer {
   display: flex;
+  align-items: stretch;
   flex-wrap: nowrap;
   gap: 0.5rem;
   margin-top: auto;
   padding-top: 0.2rem;
+}
+
+.counsellor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.profile-actions > .counsellor-actions {
+  width: 100%;
 }
 
 .card-footer .counsellor-actions {
@@ -189,10 +211,17 @@
 
 .card-footer .btn,
 .counsellor-actions .btn {
+  min-height: 44px;
+  justify-content: center;
+  text-align: center;
   padding: 0.55rem 0.95rem;
   font-size: 0.8rem;
   white-space: nowrap;
   flex-shrink: 1;
+}
+
+.counsellor-actions .btn {
+  text-align: justify;
 }
 
 .counsellor-actions .btn.is-disabled,
@@ -723,5 +752,9 @@ body.overlay-open {
   .profile-actions .btn {
     flex: 1 1 100%;
     justify-content: center;
+  }
+
+  .profile-actions .counsellor-actions {
+    flex-direction: column;
   }
 }

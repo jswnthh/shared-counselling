@@ -236,6 +236,15 @@
       card.appendChild(modes);
     }
 
+    // Link to the counsellor's dedicated profile page.
+    const readMore = document.createElement("a");
+    readMore.className = "btn btn-outline card-read-more";
+    readMore.href = `/counsellors/${encodeURIComponent(counsellor.slug)}/`;
+    readMore.textContent = "Read more";
+    readMore.setAttribute("aria-label", `Read more about ${counsellor.name}`);
+
+    card.appendChild(readMore);
+
     // Booking CTA
     const cta = document.createElement("a");
     cta.className = "btn btn-dark";

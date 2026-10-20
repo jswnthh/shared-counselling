@@ -22,7 +22,7 @@ from .scheduling import (
 logger = logging.getLogger(__name__)
 
 def _bio_paragraphs(bio):
-    """Split a packed bio into a few short paragraphs for the profile overlay."""
+    """Split a packed bio into a few short paragraphs for the profile page."""
     text = (bio or "").strip()
     if not text:
         return []
@@ -102,6 +102,15 @@ def counsellors(request):
         "counsellors": [_resolved_counsellor(c, topic_labels) for c in get_counsellors()],
     }
     return render(request, "counsellors.html", context)
+
+
+def counsellor_detail(request, slug):
+    counsellor = get_counsellor_by_slug(slug)
+    if counsellor is None:
+        raise Http404("Unknown counsellor")
+    return render(request, "counsellor_detail.html", {
+        "c": _resolved_counsellor(counsellor, get_topic_labels()),
+    })
 
 
 @require_http_methods(["GET", "POST"])

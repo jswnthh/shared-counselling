@@ -219,6 +219,37 @@ class BookingViewTests(TestCase):
         self.assertEqual(response.url, reverse("counsellors"))
 
 
+class CounsellorProfileTests(TestCase):
+    def test_directory_links_to_profile_pages_without_overlay(self):
+        response = self.client.get(reverse("counsellors"))
+        for counsellor in get_counsellors():
+            self.assertContains(response, reverse("counsellor_detail", args=[counsellor["slug"]]))
+        self.assertNotContains(response, "<dialog")
+        self.assertNotContains(response, "data-open-profile")
+
+    def test_profile_renders_details_and_actions(self):
+        counsellor = get_counsellors()[0]
+        response = self.client.get(reverse("counsellor_detail", args=[counsellor["slug"]]))
+        self.assertTemplateUsed(response, "counsellor_detail.html")
+        self.assertContains(response, counsellor["name"])
+        self.assertContains(response, "Specialties")
+        self.assertContains(response, "Therapeutic Approaches")
+        self.assertContains(response, "https://wa.me/")
+        self.assertContains(response, f'?counsellor={counsellor["slug"]}')
+
+    def test_unknown_profile_returns_404(self):
+        response = self.client.get(reverse("counsellor_detail", args=["unknown-counsellor"]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_inactive_profile_is_readable_without_booking_action(self):
+        counsellor = Counsellor.objects.first()
+        counsellor.is_active = False
+        counsellor.save(update_fields=["is_active"])
+        response = self.client.get(reverse("counsellor_detail", args=[counsellor.slug]))
+        self.assertContains(response, "Not accepting bookings")
+        self.assertNotContains(response, f'?counsellor={counsellor.slug}')
+
+
 class CounsellorWhatsAppTests(TestCase):
     def test_directory_uses_the_counsellors_database_whatsapp_number(self):
         counsellor = Counsellor.objects.get(slug=get_counsellors()[0]["slug"])
