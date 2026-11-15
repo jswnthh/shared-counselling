@@ -118,7 +118,7 @@ WSGI_APPLICATION = 'ProjectCounsellingSite.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-# Render Postgres (and any other host) injects DATABASE_URL; local stays SQLite.
+# Prefer DATABASE_URL, or use the separate Supabase connection settings.
 
 if os.environ.get("DATABASE_URL"):
     import dj_database_url
@@ -129,6 +129,25 @@ if os.environ.get("DATABASE_URL"):
             ssl_require=True,
         )
     }
+elif os.environ.get("DB_HOST"):
+    if not os.environ.get("DB_PASSWORD"):
+        raise ImproperlyConfigured(
+            "DB_PASSWORD environment variable is required when DB_HOST is set"
+        )
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "HOST": os.environ["DB_HOST"],
+            "PORT": os.environ.get("DB_PORT", "5432"),
+            "NAME": os.environ.get("DB_NAME", "postgres"),
+            "USER": os.environ.get("DB_USER", "postgres"),
+            "PASSWORD": os.environ["DB_PASSWORD"],
+            "CONN_MAX_AGE": 600,
+            "CONN_HEALTH_CHECKS": True,
+            "DISABLE_SERVER_SIDE_CURSORS": True,
+            "OPTIONS": {"sslmode": "require", "connect_timeout": 10},
+        }
+    }
 else:
     DATABASES = {
         "default": {
@@ -136,6 +155,9 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
+if _on_render and DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+    raise ImproperlyConfigured("Configure DATABASE_URL or DB_HOST for deployment")
 
 # Trust the reverse proxy's HTTPS hint; force secure cookies/HSTS off localhost.
 if not DEBUG:
