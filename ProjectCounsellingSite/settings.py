@@ -125,7 +125,7 @@ if os.environ.get("DATABASE_URL"):
 
     DATABASES = {
         "default": dj_database_url.config(
-            conn_max_age=600,
+            conn_max_age=0,
             ssl_require=True,
         )
     }
@@ -142,7 +142,7 @@ elif os.environ.get("DB_HOST"):
             "NAME": os.environ.get("DB_NAME", "postgres"),
             "USER": os.environ.get("DB_USER", "postgres"),
             "PASSWORD": os.environ["DB_PASSWORD"],
-            "CONN_MAX_AGE": 600,
+            "CONN_MAX_AGE": 0,
             "CONN_HEALTH_CHECKS": True,
             "DISABLE_SERVER_SIDE_CURSORS": True,
             "OPTIONS": {"sslmode": "require", "connect_timeout": 10},
@@ -155,6 +155,11 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
+if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
+    # Supabase transaction pooling cannot retain cursor or prepared-statement state.
+    DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
+    DATABASES["default"].setdefault("OPTIONS", {})["prepare_threshold"] = None
 
 if _on_render and DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
     raise ImproperlyConfigured("Configure DATABASE_URL or DB_HOST for deployment")
